@@ -52,13 +52,13 @@ public class KafkaUnionPointClassificationStream {
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
 
-        int htmDepth = 20;
+        final int htmDepth = 20;
+
         Converter converter = new Converter();
         HtmRegions regions = new HtmRegions();
         HTMrange htm = regions.generateConvexOverIstanbulRegion(converter, htmDepth);
 
         Broadcast<HTMrange> broadcastRange = javaSparkContext.broadcast(htm);
-        Broadcast<Integer> broadcastDepth = javaSparkContext.broadcast(htmDepth);
 
         try(JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, Durations.milliseconds(200))) {
             jssc.sparkContext().setLogLevel("WARN");
@@ -109,7 +109,7 @@ public class KafkaUnionPointClassificationStream {
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .map(pair -> {
                         Vector3d pointIn = converter.convertLatLongToVector3D(Double.valueOf(pair._1), Double.valueOf(pair._2));
-                        long lookupIdIn = HTMfunc.lookupId(pointIn.ra(), pointIn.dec(), broadcastDepth.value());
+                        long lookupIdIn = HTMfunc.lookupId(pointIn.ra(), pointIn.dec(), htmDepth);
                         boolean isInside = broadcastRange.value().isIn(lookupIdIn);
                         return isInside ? "1-g" + groupId : "0-g" + groupId;
                     }).countByValue();

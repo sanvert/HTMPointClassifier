@@ -10,8 +10,8 @@ public class RegionMapper {
     private static final Gson gson = new Gson();
 
     public static List<Region> convert(String filePath) {
-
-        return gson.fromJson(new InputStreamReader(RegionMapper.class.getClassLoader().getResourceAsStream(filePath)), List.class);
+        return gson.fromJson(new InputStreamReader(RegionMapper.class.getClassLoader().getResourceAsStream(filePath)),
+                List.class);
     }
 
     public static void main(String[] args) {
