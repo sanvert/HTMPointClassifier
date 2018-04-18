@@ -8,8 +8,10 @@ import edu.util.PropertySetting;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
+import kafka.serializer.StringEncoder;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +29,6 @@ public class MessageProducer {
     public MessageProducer(String zookeeperHosts, StreamGenerator streamGenerator, int streamLength, int batchSize) {
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
         topic = zooKeeperClientProxy.getKafkaTopics().get(0);
-
         props = new Properties();
 
         /*
@@ -41,8 +42,9 @@ public class MessageProducer {
             props.put("acks", "0");
             props.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
             props.put("buffer.memory", 33554432);
-            props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer");
-            props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer");
+            //"org.apache.kafka.common.serialization.StringSerializer"
+            props.put("key.serializer", StringSerializer.class.getName());
+            props.put("value.serializer", StringSerializer.class.getName());
             props.put("linger.ms", 1);
             props.put("retries", 0);
         }
@@ -50,7 +52,7 @@ public class MessageProducer {
         props.put("compression.codec", "1");
         props.put("request.required.acks", "0");
         props.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
-        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put("serializer.class", StringEncoder.class.getName());
         props.put("batch.num.messages", String.valueOf(batchSize));
         props.put("producer.type", "async");
         props.put("queue.buffering.max.ms", "5000");
@@ -107,7 +109,7 @@ public class MessageProducer {
         String zookeeperHosts = PropertySetting.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude);
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000000, 1000);
+        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000, 50);
         producer.startSending();
     }
 }

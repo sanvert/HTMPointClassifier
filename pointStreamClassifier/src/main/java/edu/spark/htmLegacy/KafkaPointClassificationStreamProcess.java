@@ -5,7 +5,7 @@ import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
 import edu.kafka.ZooKeeperClientProxy;
-import kafka.serializer.StringDecoder;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -18,17 +18,17 @@ import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
 import org.apache.spark.streaming.api.java.JavaPairDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
-import org.apache.spark.streaming.kafka.KafkaUtils;
+import org.apache.spark.streaming.kafka010.ConsumerStrategies;
+import org.apache.spark.streaming.kafka010.KafkaUtils;
+import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.apache.spark.util.AccumulatorV2;
 import scala.Tuple2;
 import sky.HtmRegions;
 import sky.htm.Converter;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,7 +54,6 @@ public class KafkaPointClassificationStreamProcess {
         String groupId = readFromArgumentListSilently(appConfig, 1, "00");
 
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
-        List<String> topics = zooKeeperClientProxy.getKafkaTopics();
 
         // Create context with a 0.2 seconds batch interval
         SparkConf sparkConf = new SparkConf()
@@ -83,24 +82,23 @@ public class KafkaPointClassificationStreamProcess {
             jssc.sparkContext().setLogLevel("WARN");
 
             //Kafka consumer params
-            Map<String, String> kafkaParams = new HashMap<>();
-            kafkaParams.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
+            Map<String, Object> kafkaParams = new HashMap<>();
+            kafkaParams.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
             kafkaParams.put("group.id", groupId);
+            //"org.apache.kafka.common.serialization.StringDeserializer"
+            kafkaParams.put("key.deserializer", StringDeserializer.class.getName());
+            kafkaParams.put("value.deserializer", StringDeserializer.class.getName());
             //Kafka topics to subscribe
-            Set<String> topicsSet = new HashSet<>(topics);
+            List<String> topics = zooKeeperClientProxy.getKafkaTopics();
 
 
-            JavaPairDStream<String, String> kafkaMessageStream = KafkaUtils.createDirectStream(
+            JavaDStream<String> coordinates = KafkaUtils.createDirectStream(
                     jssc,
-                    String.class,
-                    String.class,
-                    StringDecoder.class,
-                    StringDecoder.class,
-                    kafkaParams,
-                    topicsSet
-            );
+                    LocationStrategies.PreferConsistent(),
+                    ConsumerStrategies.<String,String>Subscribe(topics, kafkaParams))
+                    .map(record -> record.value());
 
-            JavaDStream<String> coordinates = kafkaMessageStream.map(Tuple2::_2);
+
             JavaPairDStream<String, String> coordinatePair = coordinates
                     .mapToPair(coordinate -> {
                         String[] coordinateArray = coordinate.split(";");
