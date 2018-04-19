@@ -1,18 +1,16 @@
 package edu.spark.htm;
 
-import edu.jhu.htm.core.HTMfunc;
 import edu.jhu.htm.core.HTMrange;
-import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
 import edu.kafka.ZooKeeperClientProxy;
-import edu.util.PropertySetting;
+import edu.util.PropertyMapper;
+import edu.util.RegionMapper;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
@@ -22,8 +20,8 @@ import org.apache.spark.streaming.kafka010.ConsumerStrategies;
 import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import scala.Tuple2;
-import sky.HtmRegions;
-import sky.htm.Converter;
+import skiplist.IntervalSkipList;
+import sky.sphericalcurrent.ProcessRange;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -38,12 +36,12 @@ public class KafkaUnionPointClassificationStream {
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(Level.WARN);
-        String zookeeperHosts = PropertySetting.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
 
-        int numOfStreams = Integer.parseInt(PropertySetting.defaults().get("spark.stream.count"));
+        int numOfStreams = Integer.parseInt(PropertyMapper.defaults().get("spark.stream.count"));
         numOfStreams = numOfStreams == 0 ? 4 : numOfStreams;
 
-        String groupId = PropertySetting.defaults().get("kafka.group.id");
+        final String groupId = PropertyMapper.defaults().get("kafka.group.id");
 
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 
@@ -63,11 +61,9 @@ public class KafkaUnionPointClassificationStream {
 
         final int htmDepth = 20;
 
-        Converter converter = new Converter();
-        HtmRegions regions = new HtmRegions();
-        HTMrange htm = regions.generateConvexOverIstanbulRegion(converter, htmDepth);
+        List<IntervalSkipList> intervalSkipLists = RegionMapper.convertIntoSkipLists("regionsHTM.json");
 
-        Broadcast<HTMrange> broadcastRange = javaSparkContext.broadcast(htm);
+        //Broadcast<HTMrange> broadcastRange = javaSparkContext.broadcast(htm);
 
         try(JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, DURATION)) {
             jssc.sparkContext().setLogLevel("WARN");
@@ -117,9 +113,14 @@ public class KafkaUnionPointClassificationStream {
 
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .map(pair -> {
-                        Vector3d pointIn = converter.convertLatLongToVector3D(Double.valueOf(pair._1), Double.valueOf(pair._2));
-                        long lookupIdIn = HTMfunc.lookupId(pointIn.ra(), pointIn.dec(), htmDepth);
-                        boolean isInside = broadcastRange.value().isIn(lookupIdIn);
+                        long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair._1), Double.valueOf(pair._2), htmDepth);
+                        boolean isInside = false;
+                        for (IntervalSkipList skipList: intervalSkipLists) {
+                            isInside = skipList.contains(hid);
+                            if(isInside) {
+                                break;
+                            }
+                        }
                         return isInside ? "1-g" + groupId : "0-g" + groupId;
                     }).countByValue();
 

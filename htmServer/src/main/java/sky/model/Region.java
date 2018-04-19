@@ -1,4 +1,4 @@
-package edu.spark.model;
+package sky.model;
 
 import spherical.util.Pair;
 

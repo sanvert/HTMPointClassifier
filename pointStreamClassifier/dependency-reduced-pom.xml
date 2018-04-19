@@ -4,7 +4,7 @@
   <groupId>edu.spark</groupId>
   <artifactId>point.stream.classifier</artifactId>
   <name>processor</name>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <build>
     <plugins>
       <plugin>

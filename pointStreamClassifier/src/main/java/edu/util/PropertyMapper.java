@@ -6,13 +6,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class PropertySetting {
+public class PropertyMapper {
 
     private static final Map<String, Map<String, String>> PROPERTY_MAP = new HashMap<>();
 
     public static final String APPLICATION_PROPERTIES = "application.properties";
 
-    public PropertySetting(String mode) {
+    public PropertyMapper(String mode) {
         if(mode == "SYS") {
             readPropertyValues(APPLICATION_PROPERTIES)
                     .forEach((k, v) -> System.setProperty(k, v));
@@ -27,7 +27,7 @@ public class PropertySetting {
         return PROPERTY_MAP.computeIfAbsent(fileName, name -> {
             Properties properties = new Properties();
 
-            InputStream propertyFileStream = PropertySetting.class.getClassLoader().getResourceAsStream(fileName);
+            InputStream propertyFileStream = PropertyMapper.class.getClassLoader().getResourceAsStream(fileName);
 
             try {
                 properties.load(propertyFileStream);

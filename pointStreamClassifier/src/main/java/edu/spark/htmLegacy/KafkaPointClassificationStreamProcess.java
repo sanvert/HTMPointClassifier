@@ -33,8 +33,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static edu.util.GenericUtils.readArgumentsSilently;
-import static edu.util.GenericUtils.readFromArgumentListSilently;
+import static edu.util.ArgumentUtils.readArgumentsSilently;
+import static edu.util.ArgumentUtils.readFromArgumentListSilently;
 
 public class KafkaPointClassificationStreamProcess {
 

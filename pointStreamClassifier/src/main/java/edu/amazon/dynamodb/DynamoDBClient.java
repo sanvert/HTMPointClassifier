@@ -9,7 +9,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import java.util.Date;
 
 import edu.amazon.dynamodb.model.OperationResult;
-import edu.util.PropertySetting;
+import edu.util.PropertyMapper;
 
 public class DynamoDBClient {
 
@@ -17,7 +17,7 @@ public class DynamoDBClient {
 
     static {
         try {
-            PropertySetting propertySetting = new PropertySetting("SYS");
+            PropertyMapper propertyMapper = new PropertyMapper("SYS");
             client = AmazonDynamoDBClientBuilder.standard()
                     .withRegion(Regions.EU_WEST_1)
                     .withCredentials(new SystemPropertiesCredentialsProvider())

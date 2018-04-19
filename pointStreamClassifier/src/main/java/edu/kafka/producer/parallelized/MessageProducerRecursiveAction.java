@@ -4,7 +4,7 @@ import com.sun.tools.javac.util.Pair;
 import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
 import edu.kafka.producer.MessageProducer;
-import edu.util.PropertySetting;
+import edu.util.PropertyMapper;
 
 import java.util.List;
 import java.util.concurrent.ForkJoinPool;
@@ -73,7 +73,7 @@ public class MessageProducerRecursiveAction<T> extends RecursiveAction {
         double minLongitude = 28.507700;
         double maxLongitude = 29.441900;
 
-        String zookeeperHosts = PropertySetting.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
 
         StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, minLatitude, maxLatitude, minLongitude, maxLongitude);
 

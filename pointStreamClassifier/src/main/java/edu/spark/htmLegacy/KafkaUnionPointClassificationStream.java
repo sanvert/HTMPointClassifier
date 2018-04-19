@@ -5,7 +5,7 @@ import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
 import edu.kafka.ZooKeeperClientProxy;
-import edu.util.PropertySetting;
+import edu.util.PropertyMapper;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -38,12 +38,12 @@ public class KafkaUnionPointClassificationStream {
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(Level.WARN);
-        String zookeeperHosts = PropertySetting.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
 
-        int numOfStreams = Integer.parseInt(PropertySetting.defaults().get("spark.stream.count"));
+        int numOfStreams = Integer.parseInt(PropertyMapper.defaults().get("spark.stream.count"));
         numOfStreams = numOfStreams == 0 ? 4 : numOfStreams;
 
-        String groupId = PropertySetting.defaults().get("kafka.group.id");
+        String groupId = PropertyMapper.defaults().get("kafka.group.id");
 
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 

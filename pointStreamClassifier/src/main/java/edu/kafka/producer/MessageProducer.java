@@ -4,7 +4,7 @@ import com.sun.tools.javac.util.Pair;
 import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
 import edu.kafka.ZooKeeperClientProxy;
-import edu.util.PropertySetting;
+import edu.util.PropertyMapper;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import kafka.producer.ProducerConfig;
@@ -106,7 +106,7 @@ public class MessageProducer {
         double minLongitude = 28.507700;
         double maxLongitude = 29.441900;
 
-        String zookeeperHosts = PropertySetting.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude);
         MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000, 50);

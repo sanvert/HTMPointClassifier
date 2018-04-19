@@ -3,7 +3,7 @@ package edu.util;
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
-public class GenericUtils {
+public class ArgumentUtils {
 
     public static String[] readArgumentsSilently(String[] args) {
         return Arrays.stream(args)
