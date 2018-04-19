@@ -1,15 +1,11 @@
 #!/usr/bin/env bash
-./sbin/start-master.sh
-
-./sbin/start-slave.sh spark://snwr-VirtualBox:7077
-
-./sbin/stop-slave.sh
 
 #Local setup
 sh /usr/local/share/spark-2.2.0-bin-hadoop2.7/sbin/start-master.sh
-/usr/local/share/spark-2.2.0-bin-hadoop2.7/sbin/start-slave.sh spark://bb-system-0652:7077
-##Stop locally
+sh /usr/local/share/spark-2.2.0-bin-hadoop2.7/sbin/start-slave.sh <master-spark-connection-str>
+#Shutdown
 sh /usr/local/share/spark-2.2.0-bin-hadoop2.7/sbin/stop-slaves.sh
+sh /usr/local/share/spark-2.2.0-bin-hadoop2.7/sbin/stop-master.sh
 
 #Set performance related parameters into custom env script
 cp /usr/local/share/spark-2.2.0-bin-hadoop2.7/conf/spark-env.sh.template /usr/local/share/spark-2.2.0-bin-hadoop2.7/conf/spark-env.sh

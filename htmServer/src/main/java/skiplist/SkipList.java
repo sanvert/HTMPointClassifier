@@ -1,11 +1,13 @@
 package skiplist;
 
+import java.io.Serializable;
+
 /**
  * A set of long intervals.
  *
  */
 
-public interface SkipList {
+public interface SkipList extends Serializable {
     /**
      * Adds the given long to this set if it is not already present.
      *

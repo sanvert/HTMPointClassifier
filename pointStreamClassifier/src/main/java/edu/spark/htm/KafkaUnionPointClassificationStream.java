@@ -1,7 +1,5 @@
 package edu.spark.htm;
 
-import edu.jhu.htm.core.HTMrange;
-import edu.jhu.skiplist.SkipList;
 import edu.kafka.ZooKeeperClientProxy;
 import edu.util.PropertyMapper;
 import edu.util.RegionMapper;
@@ -11,6 +9,7 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.serializer.KryoSerializer;
 import org.apache.spark.streaming.Duration;
 import org.apache.spark.streaming.Durations;
 import org.apache.spark.streaming.api.java.JavaDStream;
@@ -49,8 +48,8 @@ public class KafkaUnionPointClassificationStream {
         SparkConf sparkConf = new SparkConf()
                 .setAppName("KafkaStreamingTweetCoordinates")
                 .set("spark.storage.memoryFraction", "0.5")
-                .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
-                .registerKryoClasses(new Class[]{HTMrange.class, SkipList.class});
+                .set("spark.serializer", KryoSerializer.class.getName())
+                .registerKryoClasses(new Class[]{IntervalSkipList.class, IntervalSkipList.Node.class});
 
         if (DEBUG) {
             sparkConf.setMaster("spark://nl1lxl-108916.ttg.global:7077");

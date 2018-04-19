@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class IntervalSkipList implements SkipList, Serializable {
+public class IntervalSkipList implements SkipList {
 
     /**
      * The dummy head node in skip list.
@@ -285,8 +285,7 @@ public class IntervalSkipList implements SkipList, Serializable {
     /**
      * A node in a skip list.
      */
-    private static class Node
-    {
+    public static class Node implements Serializable {
         private long start;
         private long end;
 
