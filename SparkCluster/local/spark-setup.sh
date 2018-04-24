@@ -12,13 +12,13 @@ cp /usr/local/share/spark-2.2.0-bin-hadoop2.7/conf/spark-env.sh.template /usr/lo
 
 #Submit spark job
 #only to trial
-spark-submit --class edu.spark.example.KafkaStreamingProcess --master spark://bb-system-0652:7077 --executor-memory 5G \
+spark-submit --class edu.spark.example.KafkaStreamingProcess --master <master-spark-connection-str> --executor-memory 5G \
 --total-executor-cores 8 /Users/sanver/Projects/master/sparkStreamQuery/target/processor-1.0-SNAPSHOT.jar \
 --driver-java-options "-Dlog4j.debug=true -Dlog4j.configuration=log4j.properties" \
 --conf "spark.executor.extraJavaOptions='-XX:+UseCompressedOops -Dlog4j.debug=true -Dlog4j.configuration=log4j.properties'"
 
 #real trials
-spark-submit --class edu.spark.htmLegacy.KafkaPointClassificationStreamProcess --master spark://bb-system-0652:7077 --executor-memory 2G \
+spark-submit --class edu.spark.htmLegacy.KafkaPointClassificationStreamProcess --master <master-spark-connection-str> --executor-memory 2G \
 --conf "spark.executor.extraJavaOptions='-XX:+UseCompressedOops'" \
 --total-executor-cores 2 /Users/sanver/Projects/master/sparkStreamQuery/target/processor-1.0-SNAPSHOT.jar \
 "app=localhost:2181;4"
