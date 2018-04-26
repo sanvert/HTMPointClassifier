@@ -4,9 +4,9 @@ import sys
 import datetime
 import atexit
 
-import secret_params
-
 from numpy import mean
+
+import secret_params
 
 consumer_key = secret_params.consumer_key
 consumer_secret = secret_params.consumer_secret
@@ -38,7 +38,7 @@ class LocationTweetListener(tweepy.StreamListener):
         self.geo_name = name
         self.geo_avg = [mean(geobox[1::2]), mean(geobox[0::2])]
         self.filename = name + "_" + datetime.datetime.now().strftime("%Y-%m-%d") + ".json"
-        self.file = open(self.filename, mode='a', encoding='utf-8')
+        self.file = open('data/' + self.filename, mode='a', encoding='utf-8')
         self.num_of_recs = 0
         atexit.register(self.on_exit)
 
