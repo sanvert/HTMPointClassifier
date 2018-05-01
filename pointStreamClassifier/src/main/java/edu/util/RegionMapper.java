@@ -22,7 +22,7 @@ public class RegionMapper {
     public static List<IntervalSkipList> convertIntoSkipLists(String fileName) {
         List<Region> regionList = convert(fileName);
         return regionList.stream().map(region -> {
-            final IntervalSkipList skipList = new IntervalSkipList();
+            final IntervalSkipList skipList = new IntervalSkipList(String.valueOf(region.getId()));
             region.getPairs().stream().forEach(pair -> skipList.addInterval(pair.getX(), pair.getY()));
             return skipList;
         }).collect(Collectors.toList());

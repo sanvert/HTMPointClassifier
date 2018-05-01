@@ -49,7 +49,7 @@ public class MessageProducer {
             props.put("retries", 0);
         }
 
-        props.put("compression.codec", "1");
+        props.put("compression.codec", "2"); //1: GZIP, 2:Snappy
         props.put("request.required.acks", "0");
         props.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
         props.put("serializer.class", StringEncoder.class.getName());
@@ -109,7 +109,7 @@ public class MessageProducer {
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude);
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000, 50);
+        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 2000, 3000);
         producer.startSending();
     }
 }

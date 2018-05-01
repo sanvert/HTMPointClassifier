@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class IntervalSkipList implements SkipList {
-
+    /**
+     * Unique id.
+     */
+    private String id;
     /**
      * The dummy head node in skip list.
      */
@@ -24,7 +27,8 @@ public class IntervalSkipList implements SkipList {
     /**
      * Creates an empty skip list.
      */
-    public IntervalSkipList() {
+    public IntervalSkipList(String listId) {
+        id = listId;
         head = new Node(Long.MIN_VALUE, Long.MIN_VALUE, 1);
         tail = new Node(Long.MAX_VALUE, Long.MAX_VALUE, 1);
         head.next.set(0, tail);
@@ -282,6 +286,10 @@ public class IntervalSkipList implements SkipList {
         return height;
     }
 
+    public String getId() {
+        return id;
+    }
+
     /**
      * A node in a skip list.
      */
@@ -327,7 +335,7 @@ public class IntervalSkipList implements SkipList {
 
     // Dummy tests
     public static void main(String[] args) {
-        IntervalSkipList s = new IntervalSkipList();
+        IntervalSkipList s = new IntervalSkipList("0");
 
         int[] testValues = {2, 1, 4, 6, 8, 3, 9, 10, 5, 7, 23, 24, 25, 34, 35, 36, 37, 45, 46, 58, 59, 60};
 
@@ -358,7 +366,7 @@ public class IntervalSkipList implements SkipList {
         }
         System.out.println(s);
 
-        s = new IntervalSkipList();
+        s = new IntervalSkipList("0");
         System.out.println(s.isInside(25));
         s.addInterval(24, 45);
         System.out.println(s);
