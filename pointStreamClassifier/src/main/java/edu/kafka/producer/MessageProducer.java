@@ -109,7 +109,7 @@ public class MessageProducer {
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude);
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 2000, 3000);
+        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000, 100);
         producer.startSending();
     }
 }

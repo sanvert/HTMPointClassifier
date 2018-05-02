@@ -38,7 +38,7 @@ import static edu.util.ArgumentUtils.readFromArgumentListSilently;
 
 public class KafkaPointClassificationStreamProcess {
 
-    private static final boolean ENABLE_STATE_PERSISTANCE = false;
+    private static final boolean ENABLE_STATE_PERSISTENCE = false;
     private static final int STREAMING_DURATION = 300;
     private static final String INV = "-1";
     private static final Logger LOGGER = LogManager.getLogger("coordinate.stream");
@@ -133,7 +133,7 @@ public class KafkaPointClassificationStreamProcess {
             //DEBUG
             //sumCoordinates.print();
 
-            if(ENABLE_STATE_PERSISTANCE) {
+            if(ENABLE_STATE_PERSISTENCE) {
                 sumCoordinates.updateStateByKey(UPDATE_CUMULATIVE_RESULTS_STATE);
             }
 

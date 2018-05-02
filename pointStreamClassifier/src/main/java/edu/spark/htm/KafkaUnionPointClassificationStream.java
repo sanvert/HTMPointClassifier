@@ -1,6 +1,7 @@
 package edu.spark.htm;
 
 import edu.kafka.ZooKeeperClientProxy;
+import edu.spark.accumulator.MapAccumulator;
 import edu.util.PropertyMapper;
 import edu.util.RegionMapper;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -24,21 +25,23 @@ import skiplist.IntervalSkipList;
 import sky.sphericalcurrent.ProcessRange;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class KafkaUnionPointClassificationStream {
-    private static final Logger LOGGER = LogManager.getLogger("coordinate.stream");
+    private static final Logger LOGGER = LogManager.getRootLogger();
+    private static final Level LOG_LEVEL = Level.WARN;
     private static final String INV = "-1";
     private static final boolean DEBUG = true;
-    private static final Duration DURATION = Durations.milliseconds(1000);
+    private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
+    private static final boolean MULTI_COORDINATES_IN_REQUEST = false;
 
     public static void main(String[] args) throws InterruptedException {
-        LOGGER.setLevel(Level.WARN);
+        LOGGER.setLevel(LOG_LEVEL);
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
 
         int numOfStreams = Integer.parseInt(PropertyMapper.defaults().get("spark.stream.count"));
@@ -51,7 +54,7 @@ public class KafkaUnionPointClassificationStream {
         // Create context with a 0.2 seconds batch interval
         SparkConf sparkConf = new SparkConf()
                 .setAppName("KafkaStreamingTweetCoordinates")
-                .set("spark.storage.memoryFraction", "0.5")
+                //.set("spark.storage.memoryFraction", "0.5") // Deprecated since 1.6
                 .set("spark.serializer", KryoSerializer.class.getName())
                 .registerKryoClasses(new Class[]{IntervalSkipList.class, IntervalSkipList.Node.class});
 
@@ -61,30 +64,28 @@ public class KafkaUnionPointClassificationStream {
         }
 
         JavaSparkContext javaSparkContext = new JavaSparkContext(sparkConf);
+        javaSparkContext.setLogLevel(LOG_LEVEL.toString());
 
-        final AccumulatorV2 resultReport = new KafkaUnionPointClassificationStream.MapAccumulator();
+        final AccumulatorV2 resultReport = new MapAccumulator();
         javaSparkContext.sc().register(resultReport, "resultReport");
 
         KafkaUnionPointClassificationStream.ReportTask reportTimer
                 = new KafkaUnionPointClassificationStream.ReportTask(resultReport);
-        new Timer().schedule(reportTimer, 1000, 10000);
+        new Timer().schedule(reportTimer, 1000, 5000);
 
         final int htmDepth = 20;
 
-        List<IntervalSkipList> intervalSkipLists = RegionMapper.convertIntoSkipLists("regionsHTM.json");
+        final List<IntervalSkipList> intervalSkipLists = RegionMapper.convertIntoSkipLists("regionsHTM.json");
 
-        //Broadcast<HTMrange> broadcastRange = javaSparkContext.broadcast(htm);
-
-        try(JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, DURATION)) {
-            jssc.sparkContext().setLogLevel("WARN");
+        try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 
             //Kafka consumer params
             Map<String, Object> kafkaParams = new HashMap<>();
             kafkaParams.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
             kafkaParams.put("group.id", groupId);
-            //"org.apache.kafka.common.serialization.StringDeserializer"
             kafkaParams.put("key.deserializer", StringDeserializer.class.getName());
             kafkaParams.put("value.deserializer", StringDeserializer.class.getName());
+
             //Kafka topics to subscribe
             List<String> topics = zooKeeperClientProxy.getKafkaTopics();
 
@@ -92,19 +93,19 @@ public class KafkaUnionPointClassificationStream {
             List<JavaDStream<String>> kafkaStreams = new ArrayList<>(numOfStreams);
             for (int i = 0; i < numOfStreams; i++) {
                 kafkaStreams.add(KafkaUtils.createDirectStream(
-                                        jssc,
-                                        LocationStrategies.PreferConsistent(),
-                                        ConsumerStrategies.<String,String>Subscribe(topics, kafkaParams))
-                                .map(record -> record.value())
+                        jssc,
+                        LocationStrategies.PreferConsistent(),
+                        ConsumerStrategies.<String, String>Subscribe(topics, kafkaParams))
+                        .map(record -> record.value())
                 );
             }
 
             JavaDStream<String> coordinatesStream = jssc.union(kafkaStreams.get(0),
                     kafkaStreams.subList(1, kafkaStreams.size()));
 
-            if (DEBUG) {
-                //coordinatesStream.print();
-                //coordinatesStream.count().print();
+            if (MULTI_COORDINATES_IN_REQUEST) {
+                coordinatesStream = coordinatesStream.flatMap(coordinates ->
+                        Arrays.asList(coordinates.split(",")).iterator());
             }
 
             JavaPairDStream<String, String> coordinatePair = coordinatesStream
@@ -112,7 +113,7 @@ public class KafkaUnionPointClassificationStream {
                         String[] coordinateArray = coordinate.split(";");
                         String latitude = INV;
                         String longitude = INV;
-                        if(coordinateArray.length == 2) {
+                        if (coordinateArray.length == 2) {
                             latitude = coordinateArray[0];
                             longitude = coordinateArray[1];
                         } else {
@@ -126,20 +127,25 @@ public class KafkaUnionPointClassificationStream {
                         long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair._1), Double.valueOf(pair._2), htmDepth);
                         boolean isInside = false;
                         String id = null;
-                        for (IntervalSkipList skipList: intervalSkipLists) {
+                        for (IntervalSkipList skipList : intervalSkipLists) {
                             isInside = skipList.contains(hid);
-                            if(isInside) {
+                            if (isInside) {
                                 id = skipList.getId();
                                 break;
                             }
                         }
+
                         System.out.println("worker log");
                         return isInside ? id + "-" + groupId : "-";
                     }).countByValue();
 
+            if (DEBUG) {
+                //sumCoordinates.print();
+            }
+
             sumCoordinates.foreachRDD(rdd -> {
                 resultReport.add(rdd.collectAsMap());
-                if(resultReport.isZero()) {
+                if (resultReport.isZero()) {
                     System.out.println("NO RECORDS: " + System.currentTimeMillis());
                 }
             });
@@ -152,86 +158,24 @@ public class KafkaUnionPointClassificationStream {
 
     private static final class ReportTask extends TimerTask {
 
-        private final KafkaUnionPointClassificationStream.MapAccumulator mapAccumulator;
+        private final MapAccumulator mapAccumulator;
 
         public ReportTask(AccumulatorV2 accumulator) {
-            mapAccumulator = (KafkaUnionPointClassificationStream.MapAccumulator) accumulator;
+            mapAccumulator = (MapAccumulator) accumulator;
         }
 
         @Override
         public void run() {
             try {
-                if(mapAccumulator.value().size() > 0) {
+                if (mapAccumulator.value().size() > 0) {
                     System.out.println("Accumulator Batch Start Time:"
                             + mapAccumulator.getLastBatchStartTime()
-                            +  ", Last Update Time: "
+                            + ", Last Update Time: "
                             + mapAccumulator.getLastUpdateTime());
                     mapAccumulator.value().forEach((k, v) -> System.out.println(k + " " + v));
                 }
             } catch (Exception e) {
             }
-        }
-    }
-
-    private static final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<String, Long>> {
-
-        private volatile long lastBatchStartTimestamp;
-        private volatile long updateTimestamp;
-        private Map<String, Long> initalValue;
-
-        public MapAccumulator() {
-            initalValue = new ConcurrentHashMap<>();
-        }
-
-        public MapAccumulator(Map<String, Long> map) {
-            this();
-            add(map);
-        }
-
-        @Override
-        public boolean isZero() {
-            return initalValue == null || initalValue.size() == 0;
-        }
-
-        @Override
-        public AccumulatorV2<Map<String, Long>, Map<String, Long>> copy() {
-            return new KafkaUnionPointClassificationStream.MapAccumulator(value());
-        }
-
-        @Override
-        public void reset() {
-            initalValue = new ConcurrentHashMap<>();
-            updateTimestamp = System.currentTimeMillis();
-            lastBatchStartTimestamp = updateTimestamp;
-        }
-
-        @Override
-        public void add(Map<String, Long> v) {
-            if (v.size() > 0) {
-                v.forEach((key, value) -> initalValue.merge(key, value, (v1, v2) -> v1+v2));
-            }
-            updateTimestamp = System.currentTimeMillis();
-            if (lastBatchStartTimestamp - updateTimestamp > 10000) {
-                lastBatchStartTimestamp = updateTimestamp;
-            }
-        }
-
-        @Override
-        public void merge(AccumulatorV2<Map<String, Long>, Map<String, Long>> other) {
-            add(other.value());
-        }
-
-        @Override
-        public Map<String, Long> value() {
-            return initalValue;
-        }
-
-        public long getLastBatchStartTime() {
-            return lastBatchStartTimestamp;
-        }
-
-        public long getLastUpdateTime() {
-            return updateTimestamp;
         }
     }
 }
