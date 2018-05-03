@@ -4,7 +4,7 @@ import edu.jhu.htm.core.HTMfunc;
 import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static edu.util.ArgumentUtils.readArgumentsSilently;
 import static edu.util.ArgumentUtils.readFromArgumentListSilently;

@@ -3,7 +3,7 @@ package edu.kafka.producer;
 import com.sun.tools.javac.util.Pair;
 import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.util.PropertyMapper;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;

@@ -4,7 +4,7 @@ import edu.jhu.htm.core.HTMfunc;
 import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.util.PropertyMapper;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;

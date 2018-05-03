@@ -1,4 +1,4 @@
-package edu.kafka;
+package edu.kafka.zookeeper;
 
 import edu.util.PropertyMapper;
 import kafka.cluster.Broker;

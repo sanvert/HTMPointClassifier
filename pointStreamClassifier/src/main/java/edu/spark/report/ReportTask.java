@@ -17,10 +17,11 @@ public final class ReportTask extends TimerTask {
     public void run() {
         try {
             if (mapAccumulator.value().size() > 0) {
-                System.out.println("Accumulator Batch Start Time:"
+                System.out.println("Batch Start Time:"
                         + mapAccumulator.getLastBatchStartTime()
                         + ", Last Update Time: "
-                        + mapAccumulator.getLastUpdateTime());
+                        + mapAccumulator.getLastUpdateTime()
+                        + ", Diff:" + (mapAccumulator.getLastUpdateTime() - mapAccumulator.getLastBatchStartTime()));
                 mapAccumulator.value().forEach((k, v) -> System.out.println(k + " " + v));
             }
         } catch (Exception e) {

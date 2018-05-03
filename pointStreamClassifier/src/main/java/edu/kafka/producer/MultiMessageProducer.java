@@ -26,12 +26,12 @@ public class MultiMessageProducer extends MessageProducer {
 
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude,
+                = new MultiRandomCoordinateGenerator(0.6, minLatitude, maxLatitude, minLongitude, maxLongitude,
                 multiCount);
 
 
         MessageProducer mp = new MultiMessageProducer(zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
-        mp.startSendingWithKey();
+        mp.startSending();
     }
 }

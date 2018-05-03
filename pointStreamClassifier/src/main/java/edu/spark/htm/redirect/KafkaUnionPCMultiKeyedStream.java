@@ -1,6 +1,7 @@
 package edu.spark.htm.redirect;
 
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.producer.MessageSenderWrapper;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.kafka.producer.MessageSender;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
@@ -33,9 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class KafkaUnionPCMultiKeyedStream {
     private static final Logger LOGGER = LogManager.getRootLogger();
@@ -43,10 +42,7 @@ public class KafkaUnionPCMultiKeyedStream {
     private static final boolean DEBUG = true;
     private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
 
-    private static final int KAFKA_CLIENT_BATCH_SIZE = 50;
     private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
-    private static final String KAFKA_TOPIC_EMITTING_TOPICS_PREFIX = "e";
-
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
@@ -79,15 +75,6 @@ public class KafkaUnionPCMultiKeyedStream {
         javaSparkContext.sc().register(resultReport, "resultReport");
 
         final List<String> allTopics = zooKeeperClientProxy.getKafkaTopics();
-        final int kafkaSenderPoolSize
-                = javaSparkContext.sc().getConf().getInt("spark.executor.instances", 2);
-        final List<MessageSender> senderList = IntStream.range(0, kafkaSenderPoolSize)
-                .mapToObj(i -> new MessageSender(zooKeeperClientProxy,
-                        allTopics.stream()
-                                .filter(t -> t.startsWith(KAFKA_TOPIC_EMITTING_TOPICS_PREFIX))
-                                .findFirst().orElse(KAFKA_TOPIC_GATHERING_TOPICS_PREFIX),
-                        KAFKA_CLIENT_BATCH_SIZE))
-                .collect(Collectors.toList());
 
         ReportTask reportTimer = new ReportTask(resultReport);
         new Timer().schedule(reportTimer, 1000, 5000);
@@ -136,11 +123,9 @@ public class KafkaUnionPCMultiKeyedStream {
                                 long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair[0]), Double.valueOf(pair[1]),
                                         htmDepth);
 
-                                boolean isInside;
                                 String id = StringUtils.EMPTY;
                                 for (IntervalSkipList skipList : intervalSkipLists) {
-                                    isInside = skipList.contains(hid);
-                                    if (isInside) {
+                                    if (skipList.contains(hid)) {
                                         id = skipList.getId();
                                         break;
                                     }
@@ -157,7 +142,7 @@ public class KafkaUnionPCMultiKeyedStream {
 
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .flatMap(pair -> {
-                        senderList.get(ThreadLocalRandom.current().nextInt(senderList.size())).send(pair._1, pair._2);
+                        //MessageSenderWrapper.getInstance().send(pair._1, pair._2);
                         return Arrays.asList(pair._2.split(",")).iterator();
                     }).countByValue();
 

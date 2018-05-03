@@ -1,8 +1,9 @@
 package edu.spark.htm.redirect;
 
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.util.PropertyMapper;
 import edu.util.RegionMapper;
+import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -114,14 +115,14 @@ public class KafkaUnionPCSingleKeyedStream {
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .map(pair -> {
                         long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair._1), Double.valueOf(pair._2), htmDepth);
-                        boolean isInside = false;
-                        for (IntervalSkipList skipList: intervalSkipLists) {
-                            isInside = skipList.contains(hid);
-                            if(isInside) {
+                        String id = StringUtils.EMPTY;
+                        for (IntervalSkipList skipList : intervalSkipLists) {
+                            if (skipList.contains(hid)) {
+                                id = skipList.getId();
                                 break;
                             }
                         }
-                        return isInside ? "1-g" + groupId : "0-g" + groupId;
+                        return id;
                     }).countByValue();
 
             sumCoordinates.print();

@@ -1,6 +1,5 @@
 package edu.kafka.producer;
 
-import edu.kafka.ZooKeeperClientProxy;
 import kafka.serializer.StringEncoder;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -16,12 +15,12 @@ public class MessageSender {
     private final Properties properties;
     private final String topic;
 
-    public MessageSender(final ZooKeeperClientProxy zooKeeperClientProxy, final String topic, final int batchSize) {
+    public MessageSender(final String kafkaBrokerList, final String topic, final int batchSize) {
         this.topic = topic;
 
         this.properties = new Properties();
         properties.put("acks", "0");
-        properties.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
+        properties.put("bootstrap.servers", kafkaBrokerList);
         properties.put("buffer.memory", 33554432);
         properties.put("key.serializer", StringSerializer.class.getName());
         properties.put("value.serializer", StringSerializer.class.getName());
@@ -30,7 +29,7 @@ public class MessageSender {
 
         properties.put("compression.codec", "2"); //1: GZIP, 2:Snappy
         properties.put("request.required.acks", "0");
-        properties.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
+        properties.put("metadata.broker.list", kafkaBrokerList);
         properties.put("serializer.class", StringEncoder.class.getName());
         properties.put("batch.num.messages", String.valueOf(batchSize));
         properties.put("producer.type", "async");

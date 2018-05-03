@@ -1,6 +1,6 @@
 package edu.spark.htm;
 
-import edu.kafka.ZooKeeperClientProxy;
+import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
 import edu.util.PropertyMapper;
