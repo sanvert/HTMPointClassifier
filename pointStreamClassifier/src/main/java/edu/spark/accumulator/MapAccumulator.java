@@ -46,11 +46,12 @@ public final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<S
 
             long currentTimestamp = System.currentTimeMillis();
 
-            if (currentTimestamp - previousUpdateTimestamp > 35000) {
-                lastBatchStartTimestamp = updateTimestamp;
+            if (currentTimestamp - updateTimestamp > 35000) {
+                previousUpdateTimestamp = currentTimestamp;
+                lastBatchStartTimestamp = currentTimestamp;
+            } else {
+                previousUpdateTimestamp = updateTimestamp;
             }
-
-            previousUpdateTimestamp = updateTimestamp;
             updateTimestamp = currentTimestamp;
         }
     }
@@ -68,6 +69,10 @@ public final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<S
 
     public long getLastBatchStartTime() {
         return lastBatchStartTimestamp;
+    }
+
+    public long getPreviousUpdateTime() {
+        return previousUpdateTimestamp;
     }
 
     public long getLastUpdateTime() {

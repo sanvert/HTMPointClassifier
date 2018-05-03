@@ -14,7 +14,8 @@ public class MultiRandomCoordinateGenerator extends RandomCoordinatePairGenerato
 
     @Override
     public String generateString() {
-        return IntStream.range(0, multiCount).mapToObj(i -> randLatitude().toString() + ";" + randLongitude().toString())
+        return IntStream.range(0, multiCount)
+                .mapToObj(i -> randLatitude().toString() + ";" + randLongitude().toString())
                 .collect(Collectors.joining(","));
     }
 }

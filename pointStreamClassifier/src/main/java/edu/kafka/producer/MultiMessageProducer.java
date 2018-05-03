@@ -20,15 +20,14 @@ public class MultiMessageProducer extends MessageProducer {
         double minLongitude = 28.507700;
         double maxLongitude = 29.441900;
 
-        int streamLength = 1000;
-        int multiCount = 10;
+        int streamLength = 1000000;
+        int multiCount = 20;
         int batchSize = 100;
 
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new MultiRandomCoordinateGenerator(0.6, minLatitude, maxLatitude, minLongitude, maxLongitude,
                 multiCount);
-
 
         MessageProducer mp = new MultiMessageProducer(zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
