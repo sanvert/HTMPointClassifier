@@ -13,7 +13,7 @@ public final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<S
     private Map<String, Long> initialValue;
 
     public MapAccumulator() {
-        initialValue = new ConcurrentHashMap<>();
+        reset();
     }
 
     public MapAccumulator(Map<String, Long> map) {
@@ -52,8 +52,6 @@ public final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<S
 
             previousUpdateTimestamp = updateTimestamp;
             updateTimestamp = currentTimestamp;
-
-
         }
     }
 

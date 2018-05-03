@@ -26,7 +26,6 @@ import skiplist.IntervalSkipList;
 import sky.sphericalcurrent.ProcessRange;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,6 @@ public class KafkaUnionPointClassificationStream {
     private static final String INV = "-1";
     private static final boolean DEBUG = true;
     private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
-    private static final boolean MULTI_COORDINATES_IN_REQUEST = false;
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
@@ -101,11 +99,6 @@ public class KafkaUnionPointClassificationStream {
 
             JavaDStream<String> coordinatesStream = jssc.union(kafkaStreams.get(0),
                     kafkaStreams.subList(1, kafkaStreams.size()));
-
-            if (MULTI_COORDINATES_IN_REQUEST) {
-                coordinatesStream = coordinatesStream.flatMap(coordinates ->
-                        Arrays.asList(coordinates.split(",")).iterator());
-            }
 
             JavaPairDStream<String, String> coordinatePair = coordinatesStream
                     .mapToPair(coordinate -> {

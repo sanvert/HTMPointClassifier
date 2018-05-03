@@ -9,11 +9,12 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class TupleAccumulator extends AccumulatorV2<Tuple2<String, Long>, Map<String, Long>> {
 
     private volatile long lastBatchStartTimestamp;
+    private volatile long previousUpdateTimestamp;
     private volatile long updateTimestamp;
     private Map<String, Long> initialValue;
 
     public TupleAccumulator() {
-        initialValue = new ConcurrentHashMap<>();
+        reset();
     }
 
     public TupleAccumulator(Map<String, Long> map) {
@@ -35,6 +36,7 @@ public final class TupleAccumulator extends AccumulatorV2<Tuple2<String, Long>, 
     public void reset() {
         initialValue = new ConcurrentHashMap<>();
         updateTimestamp = System.currentTimeMillis();
+        previousUpdateTimestamp = updateTimestamp;
         lastBatchStartTimestamp = updateTimestamp;
     }
 
@@ -43,11 +45,14 @@ public final class TupleAccumulator extends AccumulatorV2<Tuple2<String, Long>, 
         if (v != null) {
             initialValue.merge(v._1, v._2, (v1, v2) -> v1 + v2);
 
-            updateTimestamp = System.currentTimeMillis();
+            long currentTimestamp = System.currentTimeMillis();
 
-            if (updateTimestamp - lastBatchStartTimestamp > 10000) {
+            if (currentTimestamp - previousUpdateTimestamp > 35000) {
                 lastBatchStartTimestamp = updateTimestamp;
             }
+
+            previousUpdateTimestamp = updateTimestamp;
+            updateTimestamp = currentTimestamp;
         }
     }
 
