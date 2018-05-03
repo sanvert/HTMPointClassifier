@@ -7,9 +7,8 @@ import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.util.PropertyMapper;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
-import kafka.producer.ProducerConfig;
-import kafka.serializer.StringEncoder;
 import org.apache.kafka.clients.producer.KafkaProducer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 
@@ -19,7 +18,7 @@ import java.util.Properties;
 
 public class MessageProducer {
 
-    private final ProducerConfig producerConfig;
+    private final kafka.producer.ProducerConfig producerConfig;
     private final Properties props;
     private final StreamGenerator streamGenerator;
     private final int streamLength;
@@ -37,28 +36,26 @@ public class MessageProducer {
          * Serialization option 1 - com.spring.kafka.PayloadSerializer.
          * Serialization option 2 - ByteArraySerializer - Java Object -> String (Preferrably JSON represenation instead of toString)->byteArray
          */
-        if(batchSize < 50) {
+        if(batchSize < 20) {
             //props.put("partitioner.class", "example.producer.SimplePartitioner");
+            //props.put("producer.type", "async"); // Deprecated, always async
+            //props.put("serializer.class", StringEncoder.class.getName());
+            //props.put("queue.buffering.max.ms", "5000");
+            //props.put("queue.buffering.max.messages", "10000");
         } else {
-            props.put("acks", "0");
-            props.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
-            props.put("buffer.memory", 33554432);
-            props.put("key.serializer", StringSerializer.class.getName());
-            props.put("value.serializer", StringSerializer.class.getName());
-            props.put("linger.ms", 1);
-            props.put("retries", 0);
+            props.put(ProducerConfig.ACKS_CONFIG, "0");
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, zooKeeperClientProxy.getKafkaBrokerListAsString());
+            props.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            props.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+            props.put(ProducerConfig.RETRIES_CONFIG, 0);
         }
 
-        props.put("compression.codec", "2"); //1: GZIP, 2:Snappy
-        props.put("request.required.acks", "0");
-        props.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
-        props.put("serializer.class", StringEncoder.class.getName());
-        props.put("batch.num.messages", String.valueOf(batchSize));
-        props.put("producer.type", "async");
-        props.put("queue.buffering.max.ms", "5000");
-        props.put("queue.buffering.max.messages", "10000");
+        props.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //1: gzip, 2: snappy
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1000));
 
-        this.producerConfig = new ProducerConfig(props);
+        this.producerConfig = new kafka.producer.ProducerConfig(props);
         this.streamGenerator = streamGenerator;
         this.streamLength = streamLength;
         this.batchSize = batchSize;
@@ -120,7 +117,7 @@ public class MessageProducer {
         double maxLongitude = 29.441900;
 
         int streamLength = 1000;
-        int batchSize = 100;
+        int batchSize = 50;
 
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator

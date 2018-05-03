@@ -22,7 +22,7 @@ public class MultiMessageProducer extends MessageProducer {
 
         int streamLength = 1000000;
         int multiCount = 20;
-        int batchSize = 100;
+        int batchSize = 40;
 
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator

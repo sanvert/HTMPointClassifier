@@ -8,6 +8,7 @@ import edu.spark.report.ReportTask;
 import edu.util.PropertyMapper;
 import edu.util.RegionMapper;
 import org.apache.commons.lang.StringUtils;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -87,10 +88,10 @@ public class KafkaUnionPCMultiKeyedStream {
 
             //Kafka consumer params
             Map<String, Object> kafkaParams = new HashMap<>();
-            kafkaParams.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
-            kafkaParams.put("group.id", groupId);
-            kafkaParams.put("key.deserializer", StringDeserializer.class.getName());
-            kafkaParams.put("value.deserializer", StringDeserializer.class.getName());
+            kafkaParams.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, zooKeeperClientProxy.getKafkaBrokerListAsString());
+            kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+            kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
             //Kafka topics to subscribe
             List<String> topics = allTopics.stream()

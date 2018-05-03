@@ -2,6 +2,7 @@ package edu.kafka.producer;
 
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
 
+// Bill Pugh style singleton.
 public class MessageSenderWrapper {
     private MessageSenderWrapper() {
         // private constructor
@@ -22,7 +23,6 @@ public class MessageSenderWrapper {
         );
     }
 
-    // global access point
     public static MessageSender getInstance() {
         return MessageSenderHolder.messageSender;
     }
