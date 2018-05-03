@@ -27,7 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KafkaPointClassificationWithRedirection {
+public class KafkaUnionPCSingleKeyedStream {
     private static final Logger LOGGER = LogManager.getLogger("coordinate.stream");
     private static final String INV = "-1";
     private static final boolean DEBUG = true;

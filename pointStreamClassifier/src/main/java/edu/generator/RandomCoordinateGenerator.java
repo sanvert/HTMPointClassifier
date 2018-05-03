@@ -6,13 +6,8 @@ public class RandomCoordinateGenerator extends RandomCoordinatePairGenerator {
         super(probability, minLatitude, maxLatitude, minLongitude, maxLongitude);
     }
 
-    private String randCoordinatesString() {
-
-        return randLatitude().toString() + ";" + randLongitude().toString();
-    }
-
     @Override
     public String generateString() {
-        return randCoordinatesString();
+        return randLatitude().toString() + ";" + randLongitude().toString();
     }
 }

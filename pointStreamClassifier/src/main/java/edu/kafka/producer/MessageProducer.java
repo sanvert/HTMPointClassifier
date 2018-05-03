@@ -26,7 +26,8 @@ public class MessageProducer {
     private final int batchSize;
     private String topic;
 
-    public MessageProducer(String zookeeperHosts, StreamGenerator streamGenerator, int streamLength, int batchSize) {
+    public MessageProducer(String zookeeperHosts, StreamGenerator streamGenerator,
+                           int streamLength, int batchSize) {
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
         topic = zooKeeperClientProxy.getKafkaTopics().get(0);
         props = new Properties();
@@ -42,7 +43,6 @@ public class MessageProducer {
             props.put("acks", "0");
             props.put("bootstrap.servers", zooKeeperClientProxy.getKafkaBrokerListAsString());
             props.put("buffer.memory", 33554432);
-            //"org.apache.kafka.common.serialization.StringSerializer"
             props.put("key.serializer", StringSerializer.class.getName());
             props.put("value.serializer", StringSerializer.class.getName());
             props.put("linger.ms", 1);
@@ -65,20 +65,24 @@ public class MessageProducer {
     }
 
     public void startSending() {
-
         if(batchSize < 50) {
             Producer<String, String> producer = new Producer<>(producerConfig);
-            sendBatch(producer, streamLength, batchSize);
+            sendLegacyBatch(producer, streamLength, batchSize);
             producer.close();
         } else {
             try(KafkaProducer kafkaProducer = new KafkaProducer(props)) {
-                send(kafkaProducer, streamLength);
+                sendBatch(kafkaProducer, streamLength);
             }
         }
-
     }
 
-    private void sendBatch(Producer producer, int counter, int batchSize) {
+    public void startSendingWithKey() {
+        try(KafkaProducer kafkaProducer = new KafkaProducer(props)) {
+            sendBatchWithKey(kafkaProducer, streamLength);
+        }
+    }
+
+    private void sendLegacyBatch(Producer producer, int counter, int batchSize) {
         while (counter > 0) {
             List<KeyedMessage> batchList = new ArrayList<>();
             int currentBatchCount = batchSize;
@@ -91,9 +95,18 @@ public class MessageProducer {
         }
     }
 
-    private void send(KafkaProducer producer, int counter) {
+    private void sendBatch(KafkaProducer producer, int counter) {
         while (counter > 0) {
             ProducerRecord<String, String> message = new ProducerRecord<>(topic, streamGenerator.generateString());
+            producer.send(message);
+            counter--;
+        }
+    }
+
+    private void sendBatchWithKey(KafkaProducer producer, int counter) {
+        while (counter > 0) {
+            ProducerRecord<String, String> message = new ProducerRecord<>(topic, String.valueOf(counter),
+                    streamGenerator.generateString());
             producer.send(message);
             counter--;
         }
@@ -106,10 +119,13 @@ public class MessageProducer {
         double minLongitude = 28.507700;
         double maxLongitude = 29.441900;
 
+        int streamLength = 1000;
+        int batchSize = 100;
+
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, minLatitude, maxLatitude, minLongitude, maxLongitude);
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, 1000, 100);
+        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, streamLength, batchSize);
         producer.startSending();
     }
 }

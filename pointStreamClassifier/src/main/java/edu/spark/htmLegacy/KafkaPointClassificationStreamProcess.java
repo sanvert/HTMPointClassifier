@@ -5,6 +5,8 @@ import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.skiplist.SkipList;
 import edu.kafka.ZooKeeperClientProxy;
+import edu.spark.accumulator.MapAccumulator;
+import edu.spark.report.ReportTask;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -140,80 +142,6 @@ public class KafkaPointClassificationStreamProcess {
             // Start the computation
             jssc.start();
             jssc.awaitTermination();
-        }
-    }
-
-    private static final class ReportTask extends TimerTask {
-
-        private final MapAccumulator mapAccumulator;
-
-        public ReportTask(AccumulatorV2 accumulator) {
-            mapAccumulator = (MapAccumulator) accumulator;
-        }
-
-        @Override
-        public void run() {
-            try {
-                if(mapAccumulator.value().size() > 0) {
-                    System.out.println("Accumulator Last Update Time: " + mapAccumulator.getLastUpdateTime());
-                    mapAccumulator.value().forEach((k, v) -> System.out.println(k + " " + v));
-                }
-            } catch (Exception e) {
-            }
-        }
-    }
-
-    private static final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<String, Long>> {
-
-        private volatile long updateTimestamp;
-        private Map<String, Long> initalValue;
-
-        public MapAccumulator() {
-            initalValue = new ConcurrentHashMap<>();
-        }
-
-        public MapAccumulator(Map<String, Long> map) {
-            this();
-            add(map);
-        }
-
-        @Override
-        public boolean isZero() {
-            return initalValue == null || initalValue.size() == 0;
-        }
-
-        @Override
-        public AccumulatorV2<Map<String, Long>, Map<String, Long>> copy() {
-            return new MapAccumulator(value());
-        }
-
-        @Override
-        public void reset() {
-            initalValue = new ConcurrentHashMap<>();
-            updateTimestamp = System.currentTimeMillis();
-        }
-
-        @Override
-        public void add(Map<String, Long> v) {
-            if (v.size() > 0) {
-                v.forEach((key, value) -> initalValue.merge(key, value, (v1, v2) -> v1+v2));
-                updateTimestamp = System.currentTimeMillis();
-            }
-        }
-
-        @Override
-        public void merge(AccumulatorV2<Map<String, Long>, Map<String, Long>> other) {
-            add(other.value());
-            updateTimestamp = System.currentTimeMillis();
-        }
-
-        @Override
-        public Map<String, Long> value() {
-            return initalValue;
-        }
-
-        public long getLastUpdateTime() {
-            return updateTimestamp;
         }
     }
 }
