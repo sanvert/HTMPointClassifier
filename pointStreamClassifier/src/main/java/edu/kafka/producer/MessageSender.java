@@ -1,9 +1,10 @@
 package edu.kafka.producer;
 
-import kafka.serializer.StringEncoder;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
@@ -19,18 +20,21 @@ public class MessageSender {
         this.topic = topic;
 
         this.properties = new Properties();
-        properties.put("acks", "0");
-        properties.put("bootstrap.servers", kafkaBrokerList);
-        properties.put("buffer.memory", 33554432);
-        properties.put("key.serializer", StringSerializer.class.getName());
-        properties.put("value.serializer", StringSerializer.class.getName());
-        properties.put("linger.ms", 1);
-        properties.put("retries", 0);
+        properties.put(ProducerConfig.ACKS_CONFIG, "0");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokerList);
+        properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
+        properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+        properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
+        properties.put(ProducerConfig.RETRIES_CONFIG, 0);
+        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //1: gzip, 2: snappy
+        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1024));
 
+        //Parameters for previous versions
+        properties.put("metadata.broker.list", kafkaBrokerList);
         properties.put("compression.codec", "2"); //1: GZIP, 2:Snappy
         properties.put("request.required.acks", "0");
-        properties.put("metadata.broker.list", kafkaBrokerList);
-        properties.put("serializer.class", StringEncoder.class.getName());
+        //properties.put("serializer.class", StringEncoder.class.getName());
         properties.put("batch.num.messages", String.valueOf(batchSize));
         properties.put("producer.type", "async");
         properties.put("queue.buffering.max.ms", "5000");

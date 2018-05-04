@@ -16,11 +16,11 @@ public class MessageSenderWrapper {
 
         private static MessageSender messageSender
                 = new MessageSender(ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString(),
-                ZookeeperClientProxyWrapper.getInstance().getKafkaTopics().stream()
-                        .filter(t -> t.startsWith(KAFKA_TOPIC_EMITTING_TOPICS_PREFIX))
-                        .findFirst().orElse(KAFKA_TOPIC_EMITTING_TOPICS_PREFIX),
-                KAFKA_CLIENT_BATCH_SIZE
-        );
+                            ZookeeperClientProxyWrapper.getInstance().getKafkaTopics().stream()
+                                .filter(t -> t.startsWith(KAFKA_TOPIC_EMITTING_TOPICS_PREFIX))
+                                .findFirst().orElse(KAFKA_TOPIC_EMITTING_TOPICS_PREFIX),
+                            KAFKA_CLIENT_BATCH_SIZE
+                            );
     }
 
     public static MessageSender getInstance() {

@@ -9,6 +9,7 @@ import edu.util.PropertyMapper;
 import edu.util.RegionMapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -90,7 +91,7 @@ public class KafkaUnionPCMultiKeyedStream {
             Map<String, Object> kafkaParams = new HashMap<>();
             kafkaParams.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, zooKeeperClientProxy.getKafkaBrokerListAsString());
             kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-            kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
             kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
             //Kafka topics to subscribe
@@ -99,23 +100,23 @@ public class KafkaUnionPCMultiKeyedStream {
                     .collect(Collectors.toList());
 
             // Performance improvement - stream from multiple channels
-            List<JavaDStream<Tuple2<String, String>>> kafkaStreams = new ArrayList<>(numOfStreams);
+            List<JavaDStream<Tuple2<Integer, String>>> kafkaStreams = new ArrayList<>(numOfStreams);
             for (int i = 0; i < numOfStreams; i++) {
                 kafkaStreams.add(KafkaUtils.createDirectStream(
                         jssc,
                         LocationStrategies.PreferConsistent(),
-                        ConsumerStrategies.<String, String>Subscribe(topics, kafkaParams))
+                        ConsumerStrategies.<Integer, String>Subscribe(topics, kafkaParams))
                         .map(record -> new Tuple2<>(record.key(), record.value()))
                 );
             }
 
-            JavaDStream<Tuple2<String, String>> coordinatesStream = jssc.union(kafkaStreams.get(0),
+            JavaDStream<Tuple2<Integer, String>> coordinatesStream = jssc.union(kafkaStreams.get(0),
                     kafkaStreams.subList(1, kafkaStreams.size()));
 
 
-            JavaPairDStream<String, String> coordinatePair = coordinatesStream
+            JavaPairDStream<Integer, String> coordinatePair = coordinatesStream
                     .mapToPair(record -> {
-                        String key = record._1;
+                        Integer key = record._1;
                         String[] coordinateArray = record._2.split(",");
                         StringBuilder resultBuilder = new StringBuilder();
                         for (String coordinate : coordinateArray) {
