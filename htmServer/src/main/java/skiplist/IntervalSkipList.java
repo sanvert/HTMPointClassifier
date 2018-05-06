@@ -10,17 +10,17 @@ public class IntervalSkipList implements SkipList {
      */
     private String id;
     /**
-     * The dummy head node in skip list.
+     * Head node in skip list.
      */
     private Node head;
 
     /**
-     * The dummy tail node in skip list.
+     * Tail node in skip list.
      */
     private Node tail;
 
     /**
-     * The count of non-dummy nodes at each level.
+     * The count of other nodes than head and tail at each level.
      */
     private List<Integer> nodeCounts;
 
@@ -123,7 +123,7 @@ public class IntervalSkipList implements SkipList {
      * @return the size of this skip list
      */
     public int size() {
-        // from an external point of view, size does not include the dummy head
+        // from an external point of view, size does not include the head
         return nodeCounts.get(0);
     }
 
@@ -226,7 +226,7 @@ public class IntervalSkipList implements SkipList {
             nodeCounts.set(h, nodeCounts.get(h) - 1);
         }
 
-        // remove extra levels in dummy nodes
+        // remove extra levels in head and tail nodes
         while (head.next.size() > 1 && nodeCounts.get(head.next.size() - 1) == 0) {
             head.next.remove(head.next.size() - 1);
             tail.next.remove(tail.next.size() - 1);
@@ -333,7 +333,7 @@ public class IntervalSkipList implements SkipList {
         }
     }
 
-    // Dummy tests
+    // Tests
     public static void main(String[] args) {
         IntervalSkipList s = new IntervalSkipList("0");
 

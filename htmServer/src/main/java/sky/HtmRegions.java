@@ -18,28 +18,7 @@ import java.util.List;
 
 public class HtmRegions implements Serializable {
 
-    private void generateRegiontWithGeoDB(Converter converter, String geoDBFilePath) {
-
-        GeoPackage geoPackage = null;
-        try {
-            File testFileDB = new File(geoDBFilePath);
-            geoPackage = GeoPackageManager.open(testFileDB);
-            System.out.println("connected");
-            List<List<GeoPackageGeometryData>> dbGeometryList = MapLoader.readGeometriesFromGeoPackage(geoPackage);
-            System.out.println("geometries are read");
-
-            GeoPackageGeometryData istanbul = dbGeometryList.get(1).get(40);
-
-            Convex convex = converter.convertMapGeometryIntoConvex(istanbul);
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if(geoPackage != null) {
-                geoPackage.close();
-            }
-        }
-    }
-
+    //Legacy
     public HTMrange generateBarcelonaRegionHTM(Converter converter, int htmDepth) {
         HTMindexImp index = (HTMindexImp) new HTMindexImp();
 
@@ -71,6 +50,7 @@ public class HtmRegions implements Serializable {
 
     }
 
+    //Legacy
     public HTMrange generateConvexOverIstanbulRegion(Converter converter, int htmDepth) {
         HTMindexImp index = (HTMindexImp) new HTMindexImp();
 
@@ -94,6 +74,7 @@ public class HtmRegions implements Serializable {
         return htmRange;
     }
 
+    //Legacy
     public HTMrange generateConvexOverIstanbulRegionWithChull(Converter converter, int htmDepth) {
         HTMindexImp index = (HTMindexImp) new HTMindexImp();
 
@@ -103,16 +84,12 @@ public class HtmRegions implements Serializable {
         v[2] = converter.convertLatLongToVector3D(40.762029, 29.441987);//new Vector3d(44.0d, 45.0d);
         v[3] = converter.convertLatLongToVector3D(40.968700, 28.506776);//new Vector3d(44.0d, 85.0d);
 
-        Convex convex = new Convex(v[0], v[1], v[2], v[3]);
-        //convex.simplify();
 
         Chull c = new Chull();
         c.add(v[0]);
         c.add(v[1]);
         c.add(v[2]);
         c.add(v[3]);
-        //Convex convex = c.getConvex();
-        //convex.simplify();
 
         HTMrange htmRange = new HTMrange();
 

@@ -3,6 +3,7 @@ package sky;
 import edu.jhu.htm.core.HTMfunc;
 import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
+import geopackage.MapLoader;
 import sky.htm.Converter;
 import spherical.util.Pair;
 
@@ -23,9 +24,9 @@ public class GenericTests {
         System.out.println("lat-lng:" + p + " in msec of " + (System.currentTimeMillis() - n));
     }
 
-    public void geoDBTrial() {
-        String geoDBFilePath = "C:/Users/212455787/Downloads/TUR_adm_gpkg/TUR_adm.gpkg";
-
+    public static void geoDBIstanbul(String path) {
+        Converter converter = new Converter();
+        MapLoader.generateRegiontWithGeoDB(converter, path);
     }
 
     public static void istanbulRegionTest() {
@@ -69,6 +70,9 @@ public class GenericTests {
 
     public static void main(String[] args) {
         //barcelonaRegionTest();
-        istanbulRegionTest();
+        //istanbulRegionTest();
+
+        String gadmPath = "/home/tarmur/Downloads/gadm34_TUR.gpkg";
+        geoDBIstanbul(gadmPath);
     }
 }

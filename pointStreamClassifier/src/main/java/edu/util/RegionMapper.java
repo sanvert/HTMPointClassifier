@@ -28,11 +28,22 @@ public class RegionMapper {
         }).collect(Collectors.toList());
     }
 
+    private static List<Long> extractNumberOfHTMs(List<Region> regionList) {
+        return regionList.stream()
+                .map(region -> region.getPairs().stream()
+                        .map(pair -> pair.getX() - pair.getY())
+                        .reduce(0L, Long::sum))
+                .collect(Collectors.toList());
+
+    }
+
     //Test
     public static void main(String[] args) {
-        List<Region> l = convert("regionsHTM.json");
-        System.out.println(l.get(0).toString());
-        List<IntervalSkipList> sl = convertIntoSkipLists("regionsHTM.json");
-        System.out.println(sl.get(0));
+        List<Region> regions = convert("regionsHTM.json");
+        System.out.println(regions.get(0).getPairs().size());
+        System.out.println(extractNumberOfHTMs(regions));
+        System.out.println(regions.get(0).toString());
+        List<IntervalSkipList> regionsSL = convertIntoSkipLists("regionsHTM.json");
+        System.out.println(regionsSL.get(0));
     }
 }
