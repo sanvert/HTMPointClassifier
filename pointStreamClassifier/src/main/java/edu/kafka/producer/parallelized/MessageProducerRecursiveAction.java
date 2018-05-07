@@ -1,13 +1,9 @@
 package edu.kafka.producer.parallelized;
 
-import com.sun.tools.javac.util.Pair;
-import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
 import edu.kafka.producer.MessageProducer;
-import edu.util.PropertyMapper;
 
 import java.util.List;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 import java.util.concurrent.RecursiveAction;
 import java.util.logging.Logger;
@@ -64,25 +60,6 @@ public class MessageProducerRecursiveAction<T> extends RecursiveAction {
         producer.startSending();
         logger.info("The length of " + streamLength + " processed stream is done by "
                 + Thread.currentThread().getName());
-    }
-
-    public static void main(String[] args) {
-        //Region to generate random coordinates
-        double minLatitude = 40.780000;
-        double maxLatitude = 41.339800;
-        double minLongitude = 28.507700;
-        double maxLongitude = 29.441900;
-
-        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
-
-        StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, minLatitude, maxLatitude, minLongitude, maxLongitude);
-
-        ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
-
-        RecursiveAction recursiveAction = new MessageProducerRecursiveAction(zookeeperHosts,
-                generator, 1000000, 10000, 100);
-
-        forkJoinPool.invoke(recursiveAction);
     }
 }
 

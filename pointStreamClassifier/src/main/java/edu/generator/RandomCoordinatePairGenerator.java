@@ -34,7 +34,7 @@ public class RandomCoordinatePairGenerator implements StreamGenerator<Pair> {
     }
 
     protected Double randLongitude() {
-        Double longitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLongitude(), regionBox.getMinLongitude());
+        Double longitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLongitude(), regionBox.getMaxLongitude());
         if(this.rand.nextDouble() > probability) {
             longitude += longitudeWindow;
         }
@@ -45,7 +45,7 @@ public class RandomCoordinatePairGenerator implements StreamGenerator<Pair> {
     protected Pair randCoordinates() {
 
         Double latitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLatitude(), regionBox.getMaxLatitude());
-        Double longitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLongitude(), regionBox.getMinLongitude());
+        Double longitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLongitude(), regionBox.getMaxLongitude());
 
         if(this.rand.nextDouble() > probability) {
             latitude += latitudeWindow;

@@ -14,8 +14,9 @@ import java.util.Properties;
 
 public class MessageConsumer implements Runnable {
 
-    private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
     private static final int POLL_TIMEOUT_MSEC = 1000;
+
+    public static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
 
     private final Properties properties;
     private final Consumer<Integer, String> messageConsumer;
@@ -37,8 +38,9 @@ public class MessageConsumer implements Runnable {
     }
 
     public void run() {
-        final int giveUp = 100;
+        final int giveUp = 5;
         int noRecordsCount = 0;
+        System.out.println("STARTED");
 
         while (true) {
             try {
@@ -54,6 +56,9 @@ public class MessageConsumer implements Runnable {
                             record.key(), record.value(),
                             record.partition(), record.offset());
                 });
+                if(!consumerRecords.isEmpty()) {
+                    System.out.println(System.currentTimeMillis());
+                }
                 messageConsumer.commitAsync();
             } catch (Exception e) {
                 System.out.println(e);
@@ -69,6 +74,5 @@ public class MessageConsumer implements Runnable {
         Runnable messageConsumer = new MessageConsumer(KAFKA_TOPIC_GATHERING_TOPICS_PREFIX,
                 PropertyMapper.defaults().get("kafka.group.id"));
         new Thread(messageConsumer).start();
-        System.out.println("STARTED");
     }
 }

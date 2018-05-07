@@ -23,3 +23,9 @@ spark-submit --class edu.spark.htmLegacy.KafkaPointClassificationStreamProcess -
 --total-executor-cores 2 /Users/sanver/Projects/master/sparkStreamQuery/target/processor-1.0-SNAPSHOT.jar \
 "app=localhost:2181;4"
 
+spark-submit --class edu.spark.htm.redirect.KafkaUnionPCMultiKeyedStream \
+--master <master-spark-connection-str> --num-executors 3 --executor-memory 3G \
+--total-executor-cores 6 --name "point-stream" \
+~/Projects/m/HTMPointClassifier/pointStreamClassifier/target/point.stream.classifier-1.0.jar
+
+

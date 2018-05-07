@@ -117,27 +117,4 @@ public class MessageProducer {
             counter--;
         }
     }
-
-    protected static RegionBox getIstanbulRegionBox() {
-        //Region to generate random coordinates - Istanbul
-        double minLatitude = 40.780000;
-        double maxLatitude = 41.339800;
-        double minLongitude = 28.507700;
-        double maxLongitude = 29.441900;
-
-        return new RegionBox(minLatitude, maxLatitude, minLongitude, maxLongitude);
-    }
-
-    public static void main(String[] args) {
-
-        int streamLength = 1000;
-        int batchSize = 50;
-
-        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
-        StreamGenerator<Pair> generator
-                = new RandomCoordinateGenerator(1.0, getIstanbulRegionBox());
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, streamLength, batchSize);
-
-        producer.startSendingWithKey();
-    }
 }
