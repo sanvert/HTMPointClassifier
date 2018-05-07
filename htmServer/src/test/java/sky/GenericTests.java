@@ -26,7 +26,7 @@ public class GenericTests {
 
     public static void geoDBIstanbul(String path) {
         Converter converter = new Converter();
-        MapLoader.generateRegiontWithGeoDB(converter, path);
+        MapLoader.generateRegionWithGeoDB(converter, path);
     }
 
     public static void istanbulRegionTest() {

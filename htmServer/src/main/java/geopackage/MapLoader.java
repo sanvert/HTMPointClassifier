@@ -1,7 +1,9 @@
 package geopackage;
 
 import edu.jhu.htm.core.Convex;
+import mil.nga.geopackage.BoundingBox;
 import mil.nga.geopackage.GeoPackage;
+import mil.nga.geopackage.core.contents.Contents;
 import mil.nga.geopackage.features.columns.GeometryColumns;
 import mil.nga.geopackage.features.columns.GeometryColumnsDao;
 import mil.nga.geopackage.features.user.FeatureDao;
@@ -19,19 +21,33 @@ import static junit.framework.TestCase.assertNotNull;
 
 public class MapLoader {
 
-    public static void generateRegiontWithGeoDB(Converter converter, String geoDBFilePath) {
+    private static BoundingBox getBBofIstanbul() {
+        //Istanbul
+        double minLatitude = 40.780000;
+        double maxLatitude = 41.339800;
+        double minLongitude = 28.507700;
+        double maxLongitude = 29.441900;
+
+        return new BoundingBox(minLongitude, maxLongitude, minLatitude, maxLatitude);
+    }
+
+    //Legacy
+    public static Convex generateRegionWithGeoDB(Converter converter, String geoDBFilePath) {
 
         GeoPackage geoPackage = null;
         try {
             File testFileDB = new File(geoDBFilePath);
             geoPackage = GeoPackageManager.open(testFileDB);
             System.out.println("connected");
-            List<List<GeoPackageGeometryData>> dbGeometryList = readGeometriesFromGeoPackage(geoPackage);
+            Contents contents = new Contents();
+            contents.setBoundingBox(getBBofIstanbul());
+            contents.setTableName("TUR_2");
+            List<GeoPackageGeometryData> dbGeometryList = readGeometriesFromGeoPackage(geoPackage.getFeatureDao(contents));
             System.out.println("geometries are read");
 
-            GeoPackageGeometryData istanbul = dbGeometryList.get(1).get(40);
+            GeoPackageGeometryData istanbul = dbGeometryList.get(1);
 
-            Convex convex = converter.convertMapGeometryIntoConvex(istanbul);
+            return converter.convertMapGeometryIntoConvex(istanbul);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -39,37 +55,27 @@ public class MapLoader {
                 geoPackage.close();
             }
         }
+        return null;
     }
 
-    public static List<List<GeoPackageGeometryData>> readGeometriesFromGeoPackage(GeoPackage geoPackage) throws SQLException {
-        List<List<GeoPackageGeometryData>> dbGeometryList = new ArrayList<>();
-        GeometryColumnsDao geometryColumnsDao = geoPackage.getGeometryColumnsDao();
-        if (geometryColumnsDao.isTableExists()) {
-            List<GeometryColumns> results = geometryColumnsDao.queryForAll();
-            for (GeometryColumns geometryColumns : results) {
-                FeatureDao dao = geoPackage.getFeatureDao(geometryColumns);
+    public static List<GeoPackageGeometryData> readGeometriesFromGeoPackage(FeatureDao dao) {
 
-                assertNotNull(dao);
+        assertNotNull(dao);
 
-                List<GeoPackageGeometryData> geometryList = new ArrayList<>();
-                FeatureResultSet cursor = dao.queryForAll();
+        List<GeoPackageGeometryData> geometryList = new ArrayList<>();
+        FeatureResultSet cursor = dao.queryForAll();
 
-                while (cursor.moveToNext()) {
-                    GeoPackageGeometryData geometryData = cursor.getGeometry();
-                    if (geometryData != null) {
-                        System.out.println("GEOM will be processed is type of "
-                                + geometryData.getGeometry().getGeometryType());
+        while (cursor.moveToNext()) {
+            GeoPackageGeometryData geometryData = cursor.getGeometry();
+            if (geometryData != null) {
+                System.out.println("GEOM will be processed is type of "
+                        + geometryData.getGeometry().getGeometryType());
 
-                        geometryList.add(geometryData);
-                    }
-                }
-                dbGeometryList.add(geometryList);
+                geometryList.add(geometryData);
             }
-        } else {
-            System.out.println("GEOM Columns does not exists!");
         }
 
-        return dbGeometryList;
+        return geometryList;
     }
 
 

@@ -43,6 +43,7 @@ public class Converter implements Serializable {
         return c.getConvex();
     }
 
+    //Legacy
     public Convex convertMapGeometryIntoConvex(GeoPackageGeometryData data) throws Exception {
         Chull c = new Chull();
         if(data.getGeometry() != null &&

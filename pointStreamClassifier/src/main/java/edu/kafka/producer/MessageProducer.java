@@ -119,7 +119,7 @@ public class MessageProducer {
     }
 
     public static void main(String[] args) {
-        //Region to generate random coordinates
+        //Region to generate random coordinates - Istanbul
         double minLatitude = 40.780000;
         double maxLatitude = 41.339800;
         double minLongitude = 28.507700;
