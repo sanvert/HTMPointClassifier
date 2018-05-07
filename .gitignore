@@ -3,5 +3,5 @@
 target*
 spark-warehouse
 *.properties
-*.json
+*data*.json
 */data
