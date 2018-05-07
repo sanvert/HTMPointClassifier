@@ -13,7 +13,6 @@ public class MultiMessageProducer extends MessageProducer {
     }
 
     public static void main(String[] args) {
-        
         int streamLength = 1000000;
         int multiCount = 20;
         int batchSize = 40;

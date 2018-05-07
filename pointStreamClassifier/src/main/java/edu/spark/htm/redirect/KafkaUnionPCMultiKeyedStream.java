@@ -41,8 +41,9 @@ import java.util.stream.Collectors;
 public class KafkaUnionPCMultiKeyedStream {
     private static final Logger LOGGER = LogManager.getRootLogger();
     private static final Level LOG_LEVEL = Level.WARN;
-    private static final boolean DEBUG = true;
-    private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
+    private static final boolean DEBUG = false;
+    private static final Duration BATCH_DURATION
+            = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
 
     private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
 

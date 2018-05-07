@@ -12,7 +12,7 @@ public class MessageSenderWrapper {
     // referenced.
     private static class MessageSenderHolder {
         private static final String KAFKA_TOPIC_EMITTING_TOPICS_PREFIX = "e";
-        private static final int KAFKA_CLIENT_BATCH_SIZE = 50;
+        private static final int KAFKA_CLIENT_BATCH_SIZE = 50; //KB
 
         private static MessageSender messageSender
                 = new MessageSender(ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString(),
