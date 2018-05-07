@@ -13,21 +13,14 @@ public class MultiMessageProducer extends MessageProducer {
     }
 
     public static void main(String[] args) {
-
-        //Region to generate random coordinates
-        double minLatitude = 40.780000;
-        double maxLatitude = 41.339800;
-        double minLongitude = 28.507700;
-        double maxLongitude = 29.441900;
-
+        
         int streamLength = 1000000;
         int multiCount = 20;
         int batchSize = 40;
 
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(0.6, minLatitude, maxLatitude, minLongitude, maxLongitude,
-                multiCount);
+                = new MultiRandomCoordinateGenerator(0.6, getIstanbulRegionBox(), multiCount);
 
         MessageProducer mp = new MultiMessageProducer(zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
