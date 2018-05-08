@@ -17,16 +17,16 @@ import java.util.concurrent.RecursiveAction;
 public class Query {
 
     public static long sendMultiMessageQuery(String zookeeperHosts) {
-        int streamLength = 1000000;
+        int streamLength = 500000;
         int multiCount = 20;
         int batchSize = 40;
 
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(0.6, getIstanbulRegionBox(), multiCount);
+                = new MultiRandomCoordinateGenerator(0.9, getIstanbulRegionBox(), multiCount);
 
         MessageProducer mp = new MultiMessageProducer(zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
-        mp.startSending();
+        mp.startSendingWithKey();
         return System.currentTimeMillis();
     }
 

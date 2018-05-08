@@ -72,7 +72,7 @@ public class MessageProducer {
     }
 
     public void startSending() {
-        if(batchSize < 50) {
+        if(batchSize < 11) {
             Producer<Integer, String> producer = new Producer<>(producerConfig);
             sendLegacyBatch(producer, streamLength, batchSize);
             producer.close();
