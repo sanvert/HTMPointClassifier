@@ -46,7 +46,7 @@ public final class MapAccumulator extends AccumulatorV2<Map<String, Long>, Map<S
 
             long currentTimestamp = System.currentTimeMillis();
 
-            if (currentTimestamp - updateTimestamp > 35000) {
+            if (currentTimestamp - updateTimestamp > 20000) {
                 previousUpdateTimestamp = currentTimestamp;
                 lastBatchStartTimestamp = currentTimestamp;
             } else {

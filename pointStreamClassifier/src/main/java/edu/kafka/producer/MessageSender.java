@@ -49,7 +49,7 @@ public class MessageSender {
         send(null, value);
     }
 
-    public void send(String key, String value) {
+    public void send(Integer key, String value) {
         try {
             kafkaProducerRef.get().send(new ProducerRecord(topic, key, value));
         } catch (Exception e) {

@@ -14,6 +14,7 @@ import java.util.Properties;
 
 public class MessageConsumer implements Runnable {
 
+    private static final boolean DEBUG = true;
     private static final int POLL_TIMEOUT_MSEC = 1000;
 
     public static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
@@ -34,11 +35,10 @@ public class MessageConsumer implements Runnable {
         messageConsumer = new KafkaConsumer<>(properties);
         // Subscribe to the topic.
         messageConsumer.subscribe(Collections.singletonList(topic));
-
     }
 
     public void run() {
-        final int giveUp = 5;
+        final int giveUp = 11;
         int noRecordsCount = 0;
         System.out.println("STARTED");
 
@@ -52,9 +52,11 @@ public class MessageConsumer implements Runnable {
                     else continue;
                 }
                 consumerRecords.forEach(record -> {
-                    System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",
-                            record.key(), record.value(),
-                            record.partition(), record.offset());
+                    if (DEBUG) {
+                        System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",
+                                record.key(), record.value(),
+                                record.partition(), record.offset());
+                    }
                 });
                 if(!consumerRecords.isEmpty()) {
                     System.out.println(System.currentTimeMillis());

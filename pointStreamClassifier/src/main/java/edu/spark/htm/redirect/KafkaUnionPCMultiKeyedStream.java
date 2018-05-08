@@ -44,7 +44,7 @@ public class KafkaUnionPCMultiKeyedStream {
     private static final boolean DEBUG = false;
     private static final Duration BATCH_DURATION
             = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
-
+    private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.defaults().get("report.period"));
     private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
 
     public static void main(String[] args) throws InterruptedException {
@@ -80,7 +80,7 @@ public class KafkaUnionPCMultiKeyedStream {
         final List<String> allTopics = zooKeeperClientProxy.getKafkaTopics();
 
         ReportTask reportTimer = new ReportTask(resultReport);
-        new Timer().schedule(reportTimer, 1000, 5000);
+        new Timer().schedule(reportTimer, 1000, REPORT_PERIOD);
 
         final int htmDepth = 20;
 
@@ -145,7 +145,7 @@ public class KafkaUnionPCMultiKeyedStream {
 
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .flatMap(pair -> {
-                        //MessageSenderWrapper.getInstance().send(pair._1, pair._2);
+                        MessageSenderWrapper.getInstance().send(pair._1, pair._2);
                         return Arrays.asList(pair._2.split(",")).iterator();
                     }).countByValue();
 

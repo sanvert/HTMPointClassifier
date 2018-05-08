@@ -47,11 +47,12 @@ public final class TupleAccumulator extends AccumulatorV2<Tuple2<String, Long>, 
 
             long currentTimestamp = System.currentTimeMillis();
 
-            if (currentTimestamp - previousUpdateTimestamp > 35000) {
+            if (currentTimestamp - updateTimestamp > 20000) {
+                previousUpdateTimestamp = currentTimestamp;
                 lastBatchStartTimestamp = currentTimestamp;
+            } else {
+                previousUpdateTimestamp = updateTimestamp;
             }
-
-            previousUpdateTimestamp = updateTimestamp;
             updateTimestamp = currentTimestamp;
         }
     }
