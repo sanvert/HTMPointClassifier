@@ -23,7 +23,9 @@ public class RegionMapper {
         List<Region> regionList = convert(fileName);
         return regionList.stream().map(region -> {
             final IntervalSkipList skipList = new IntervalSkipList(String.valueOf(region.getId()));
-            region.getPairs().stream().forEach(pair -> skipList.addInterval(pair.getX(), pair.getY()));
+            region.getPairs().stream()
+                    .forEach(polygonPairs -> polygonPairs
+                                            .forEach(pair -> skipList.addInterval(pair.getX(), pair.getY())));
             return skipList;
         }).collect(Collectors.toList());
     }
@@ -31,10 +33,11 @@ public class RegionMapper {
     private static List<Long> extractNumberOfHTMs(List<Region> regionList) {
         return regionList.stream()
                 .map(region -> region.getPairs().stream()
-                        .map(pair -> pair.getX() - pair.getY())
+                        .map(polygonPair -> polygonPair.stream()
+                                .map(pair -> pair.getX() - pair.getY())
+                                .reduce(0L, Long::sum))
                         .reduce(0L, Long::sum))
                 .collect(Collectors.toList());
-
     }
 
     //Test
