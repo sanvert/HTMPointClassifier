@@ -6,5 +6,5 @@ spark-warehouse
 *data*.json
 */data
 *__pycache__*
-!htm.server-*.jar
-!point.stream.classifier-*.jar
+!target/htm.server-*.jar
+!target/point.stream.classifier-*.jar
