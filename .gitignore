@@ -1,10 +1,7 @@
 *.idea
 *.iml
-target*
 spark-warehouse
 *.properties
 *data*.json
 */data
 *__pycache__*
-!target/htm.server-*.jar
-!target/point.stream.classifier-*.jar
