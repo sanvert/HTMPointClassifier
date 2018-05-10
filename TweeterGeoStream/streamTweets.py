@@ -13,6 +13,8 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
+validPoints = 0
+
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
                    29.316821, 40.948929, 29.498401, 41.407169,
@@ -25,6 +27,10 @@ GEOBOX_IZMIR = [26.2342, 38.0351, 28.368, 38.367,
 GEOBOX_ANKARA = [31.9586, 39.3283, 33.3868, 40.324,
                  31.04, 40.0072, 31.9586, 40.308,
                  32.2241, 40.308, 32.8742, 40.6261]
+
+GEOBOX_EUROPE = [-11.5879977214, 43.009951276, 22.3251176581, 58.5423370438,
+                 -10.9337030232, 37.1693101565, 25.5802343813, 43.009951276]
+
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -106,11 +112,15 @@ class LocationTweetListener(tweepy.StreamListener):
             return mean(geo['coordinates'][0], axis=0)
 
 
-tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ISTANBUL, "Istanbul"))\
-    .filter(locations=GEOBOX_ISTANBUL, async=True)
+if validPoints:
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ISTANBUL, "Istanbul"))\
+        .filter(locations=GEOBOX_ISTANBUL, async=True)
 
-tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_IZMIR, "Izmir"))\
-    .filter(locations=GEOBOX_IZMIR, async=True)
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_IZMIR, "Izmir"))\
+        .filter(locations=GEOBOX_IZMIR, async=True)
 
-tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Ankara")) \
-    .filter(locations=GEOBOX_ANKARA, async=True)
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Ankara")) \
+        .filter(locations=GEOBOX_ANKARA, async=True)
+else:
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Europe")) \
+        .filter(locations=GEOBOX_EUROPE, async=True)
