@@ -1,4 +1,5 @@
 # HTMPointClassifier
 
-- In order to run kafka cluster on AWS with required credentials and infrastructure type 
-Cloudformation script is available under KafkaCluster module.
+- In order to start up Kafka cluster on AWS CloudFormation script is available under KafkaCluster module.
+Credentials and keys private to the account also instance type of cluster instances can be selected within
+form.

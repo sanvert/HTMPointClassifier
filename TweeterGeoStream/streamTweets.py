@@ -13,7 +13,7 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
-validPoints = 0
+streamFilterInterestedRegion = 1
 
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
@@ -112,7 +112,7 @@ class LocationTweetListener(tweepy.StreamListener):
             return mean(geo['coordinates'][0], axis=0)
 
 
-if validPoints:
+if streamFilterInterestedRegion:
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ISTANBUL, "Istanbul"))\
         .filter(locations=GEOBOX_ISTANBUL, async=True)
 
