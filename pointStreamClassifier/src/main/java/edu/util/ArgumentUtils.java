@@ -1,5 +1,7 @@
 package edu.util;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
@@ -13,7 +15,16 @@ public class ArgumentUtils {
                 .orElse(new String[]{});
     }
 
-    public static String readFromArgumentListSilently(String[] arr, int idx, String def) {
+    public static String readArgumentOverriding(String[] arr, int idx, String name) {
+        try {
+            PropertyMapper.defaults().putIfAbsent(name, arr[idx]);
+            return arr[idx];
+        } catch(ArrayIndexOutOfBoundsException e) {
+        }
+        return StringUtils.EMPTY;
+    }
+
+    public static String readArgumentSilently(String[] arr, int idx, String def) {
         try {
             return arr[idx];
         } catch(ArrayIndexOutOfBoundsException e) {
@@ -22,10 +33,10 @@ public class ArgumentUtils {
     }
 
     public static int readIntegerArgumentSilently(String[] arr, int idx) {
-        return Integer.parseInt(readFromArgumentListSilently(arr, idx, "0"));
+        return Integer.parseInt(readArgumentSilently(arr, idx, "0"));
     }
 
-    public static long msecInPassedTime(long nsStart, long nsEnd) {
+    public static long passedTimeInMsec(long nsStart, long nsEnd) {
         return TimeUnit.NANOSECONDS.toMillis(nsEnd) - TimeUnit.NANOSECONDS.toMillis(nsStart);
     }
 }

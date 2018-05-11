@@ -13,7 +13,7 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
-streamFilterInterestedRegion = 1
+streamFilterInterestedRegion = 0
 
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
