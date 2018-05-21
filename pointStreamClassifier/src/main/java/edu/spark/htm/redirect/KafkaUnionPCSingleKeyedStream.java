@@ -43,7 +43,7 @@ public class KafkaUnionPCSingleKeyedStream {
     private static final Duration BATCH_DURATION
             = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
     private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.defaults().get("report.period"));
-    private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
+    private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
@@ -95,7 +95,7 @@ public class KafkaUnionPCSingleKeyedStream {
 
             //Kafka topics to subscribe
             List<String> topics = allTopics.stream()
-                    .filter(topic -> topic.startsWith(KAFKA_TOPIC_GATHERING_TOPICS_PREFIX))
+                    .filter(topic -> topic.startsWith(KAFKA_PRODUCER_TOPICS_PREFIX))
                     .collect(Collectors.toList());
 
             // Performance improvement - stream from multiple channels

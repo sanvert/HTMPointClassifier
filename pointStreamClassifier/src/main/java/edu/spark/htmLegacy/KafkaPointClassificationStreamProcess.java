@@ -7,6 +7,7 @@ import edu.jhu.skiplist.SkipList;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
+import edu.util.ArgumentUtils;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -34,7 +35,6 @@ import java.util.Map;
 import java.util.Timer;
 
 import static edu.util.ArgumentUtils.readArgumentsSilently;
-import static edu.util.ArgumentUtils.readFromArgumentListSilently;
 
 public class KafkaPointClassificationStreamProcess {
 
@@ -49,9 +49,9 @@ public class KafkaPointClassificationStreamProcess {
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(Level.WARN);
         String[] appConfig = readArgumentsSilently(args);
-        String zookeeperHosts = readFromArgumentListSilently(appConfig, 0, "localhost:2181");
+        String zookeeperHosts = ArgumentUtils.readArgumentSilently(appConfig, 0, "localhost:2181");
 
-        String groupId = readFromArgumentListSilently(appConfig, 1, "00");
+        String groupId = ArgumentUtils.readArgumentSilently(appConfig, 1, "00");
 
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 

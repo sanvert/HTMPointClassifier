@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class MessageSender {
 
-    private static final AtomicReference<Producer> kafkaProducerRef = new AtomicReference<>();
+    private final AtomicReference<Producer> kafkaProducerRef = new AtomicReference<>();
     private final Properties properties;
     private final String topic;
 

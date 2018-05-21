@@ -1,5 +1,6 @@
 package edu.kafka.consumer;
 
+import edu.kafka.producer.MessageSenderFactory;
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
 import edu.util.PropertyMapper;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -17,14 +18,11 @@ public class MessageConsumer implements Runnable {
     private static final boolean DEBUG = false;
     private static final int POLL_TIMEOUT_MSEC = 1000;
 
-    public static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
-
     private final Properties properties;
     private final Consumer<Integer, String> messageConsumer;
 
     public MessageConsumer(final String topic, final String groupId) {
         this.properties = new Properties();
-
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
@@ -75,7 +73,7 @@ public class MessageConsumer implements Runnable {
     }
 
     public static void main(String[] args) {
-        Runnable messageConsumer = new MessageConsumer(KAFKA_TOPIC_GATHERING_TOPICS_PREFIX,
+        Runnable messageConsumer = new MessageConsumer(MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + "1",
                 PropertyMapper.defaults().get("kafka.group.id"));
         new Thread(messageConsumer).start();
     }

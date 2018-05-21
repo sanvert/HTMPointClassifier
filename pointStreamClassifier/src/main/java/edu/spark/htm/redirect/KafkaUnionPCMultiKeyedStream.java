@@ -1,5 +1,6 @@
 package edu.spark.htm.redirect;
 
+import edu.kafka.producer.MessageSenderFactory;
 import edu.kafka.producer.MessageSenderWrapper;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.kafka.producer.MessageSender;
@@ -27,6 +28,7 @@ import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.apache.spark.util.AccumulatorV2;
 import scala.Tuple2;
+import scala.Tuple3;
 import skiplist.IntervalSkipList;
 import sky.sphericalcurrent.ProcessRange;
 
@@ -45,7 +47,7 @@ public class KafkaUnionPCMultiKeyedStream {
     private static final Duration BATCH_DURATION
             = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
     private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.defaults().get("report.period"));
-    private static final String KAFKA_TOPIC_GATHERING_TOPICS_PREFIX = "m";
+    private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
@@ -97,28 +99,31 @@ public class KafkaUnionPCMultiKeyedStream {
 
             //Kafka topics to subscribe
             List<String> topics = allTopics.stream()
-                    .filter(topic -> topic.startsWith(KAFKA_TOPIC_GATHERING_TOPICS_PREFIX))
+                    .filter(topic -> topic.startsWith(KAFKA_PRODUCER_TOPICS_PREFIX))
                     .collect(Collectors.toList());
 
             // Performance improvement - stream from multiple channels
-            List<JavaDStream<Tuple2<Integer, String>>> kafkaStreams = new ArrayList<>(numOfStreams);
+            List<JavaDStream<Tuple3<String, Integer, String>>> kafkaStreams = new ArrayList<>(numOfStreams);
             for (int i = 0; i < numOfStreams; i++) {
+
                 kafkaStreams.add(KafkaUtils.createDirectStream(
                         jssc,
                         LocationStrategies.PreferConsistent(),
                         ConsumerStrategies.<Integer, String>Subscribe(topics, kafkaParams))
-                        .map(record -> new Tuple2<>(record.key(), record.value()))
+                        .map(record -> new Tuple3<>(record.topic(), record.key(), record.value()))
                 );
+
             }
 
-            JavaDStream<Tuple2<Integer, String>> coordinatesStream = jssc.union(kafkaStreams.get(0),
+            JavaDStream<Tuple3<String, Integer, String>> coordinatesStream = jssc.union(kafkaStreams.get(0),
                     kafkaStreams.subList(1, kafkaStreams.size()));
 
 
             JavaPairDStream<Integer, String> coordinatePair = coordinatesStream
                     .mapToPair(record -> {
-                        Integer key = record._1;
-                        String[] coordinateArray = record._2.split(",");
+                        String topic = record._1();
+                        Integer key = record._2();
+                        String[] coordinateArray = record._3().split(",");
                         StringBuilder resultBuilder = new StringBuilder();
                         for (String coordinate : coordinateArray) {
                             String[] pair = coordinate.split(";");
@@ -140,12 +145,15 @@ public class KafkaUnionPCMultiKeyedStream {
                             }
                         }
 
+
+                        MessageSenderFactory.getSender(topic.split("-")[1]).send(key, resultBuilder.toString());
+
                         return new Tuple2<>(key, resultBuilder.toString());
                     });
 
             JavaPairDStream<String, Long> sumCoordinates = coordinatePair
                     .flatMap(pair -> {
-                        MessageSenderWrapper.getInstance().send(pair._1, pair._2);
+                        //MessageSenderWrapper.getInstance().send(pair._1, pair._2);
                         return Arrays.asList(pair._2.split(",")).iterator();
                     }).countByValue();
 

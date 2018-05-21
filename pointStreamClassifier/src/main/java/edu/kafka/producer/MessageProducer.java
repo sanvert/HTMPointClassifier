@@ -1,10 +1,7 @@
 package edu.kafka.producer;
 
-import com.sun.tools.javac.util.Pair;
-import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
-import edu.util.PropertyMapper;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -24,12 +21,12 @@ public class MessageProducer {
     private final StreamGenerator streamGenerator;
     private final int streamLength;
     private final int batchSize;
-    private String topic;
+    private String topicToSend;
 
-    public MessageProducer(String zookeeperHosts, StreamGenerator streamGenerator,
+    public MessageProducer(String topic, String zookeeperHosts, StreamGenerator streamGenerator,
                            int streamLength, int batchSize) {
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
-        topic = zooKeeperClientProxy.getKafkaTopics().get(0);
+        topicToSend = topic;
         properties = new Properties();
 
         /*
@@ -94,7 +91,7 @@ public class MessageProducer {
             List<KeyedMessage> batchList = new ArrayList<>();
             int currentBatchCount = batchSize;
             while(currentBatchCount > 0 && counter - batchList.size() > 0) {
-                batchList.add( new KeyedMessage(topic, streamGenerator.generateString()));
+                batchList.add( new KeyedMessage(topicToSend, streamGenerator.generateString()));
                 currentBatchCount--;
             }
             producer.send(batchList);
@@ -104,7 +101,8 @@ public class MessageProducer {
 
     private void sendBatch(KafkaProducer producer, int counter) {
         while (counter > 0) {
-            ProducerRecord<Integer, String> message = new ProducerRecord<>(topic, streamGenerator.generateString());
+            ProducerRecord<Integer, String> message = new ProducerRecord<>(topicToSend,
+                    streamGenerator.generateString());
             producer.send(message);
             counter--;
         }
@@ -112,7 +110,8 @@ public class MessageProducer {
 
     private void sendBatchWithKey(KafkaProducer producer, int counter) {
         while (counter > 0) {
-            ProducerRecord<Integer, String> message = new ProducerRecord<>(topic, counter, streamGenerator.generateString());
+            ProducerRecord<Integer, String> message = new ProducerRecord<>(topicToSend, counter,
+                    streamGenerator.generateString());
             producer.send(message);
             counter--;
         }

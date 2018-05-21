@@ -13,16 +13,19 @@ import java.util.stream.IntStream;
 public class MessageProducerRecursiveAction<T> extends RecursiveAction {
 
     private static final int SUBTASK_COUNT = 4;
+    private String producerTopic;
+    private String zookeeperHosts;
     private StreamGenerator<T> streamGenerator;
     private int streamLength;
     private int threshold;
     private int batchSize;
-    private String zookeeperHosts;
 
     private static Logger logger = Logger.getAnonymousLogger();
 
-    public MessageProducerRecursiveAction(String zookeeperHosts, StreamGenerator<T> streamGenerator, int streamLength,
+    public MessageProducerRecursiveAction(String producerTopic, String zookeeperHosts,
+                                          StreamGenerator<T> streamGenerator, int streamLength,
                                           int threshold, int batchSize) {
+        this.producerTopic = producerTopic;
         this.streamGenerator = streamGenerator;
         this.streamLength = streamLength;
         this.threshold = threshold;
@@ -49,14 +52,15 @@ public class MessageProducerRecursiveAction<T> extends RecursiveAction {
                     if(idx==SUBTASK_COUNT)
                         localSubStreamLength += subStreamLengthRemainder;
 
-                    return new MessageProducerRecursiveAction(zookeeperHosts, streamGenerator, localSubStreamLength, threshold,
-                            batchSize);
+                    return new MessageProducerRecursiveAction(producerTopic, zookeeperHosts, streamGenerator,
+                            localSubStreamLength, threshold, batchSize);
                 })
                 .collect(Collectors.toList());
     }
 
     private void process() {
-        MessageProducer producer = new MessageProducer(zookeeperHosts, streamGenerator, streamLength, batchSize);
+        MessageProducer producer = new MessageProducer(producerTopic, zookeeperHosts, streamGenerator, streamLength,
+                batchSize);
         producer.startSending();
         logger.info("The length of " + streamLength + " processed stream is done by "
                 + Thread.currentThread().getName());

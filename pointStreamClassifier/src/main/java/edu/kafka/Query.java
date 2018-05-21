@@ -6,6 +6,7 @@ import edu.generator.RandomCoordinateGenerator;
 import edu.generator.StreamGenerator;
 import edu.kafka.consumer.MessageConsumer;
 import edu.kafka.producer.MessageProducer;
+import edu.kafka.producer.MessageSenderFactory;
 import edu.kafka.producer.MultiMessageProducer;
 import edu.kafka.producer.RegionBox;
 import edu.kafka.producer.parallelized.MessageProducerRecursiveAction;
@@ -16,7 +17,17 @@ import java.util.concurrent.RecursiveAction;
 
 public class Query {
 
-    public static long sendMultiMessageQuery(String zookeeperHosts) {
+    private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
+
+    private final String producerTopic;
+    private final String consumerTopic;
+
+    public Query(final String producerTopic, final String consumerTopic) {
+        this.producerTopic = producerTopic;
+        this.consumerTopic = consumerTopic;
+    }
+
+    public long sendMultiMessageQuery(String zookeeperHosts) {
         int streamLength = 500000;
         int multiCount = 20;
         int batchSize = 40;
@@ -24,38 +35,38 @@ public class Query {
         StreamGenerator<Pair> generator
                 = new MultiRandomCoordinateGenerator(0.9, getIstanbulRegionBox(), multiCount);
 
-        MessageProducer mp = new MultiMessageProducer(zookeeperHosts, generator, streamLength,
+        MessageProducer mp = new MultiMessageProducer(producerTopic, zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
         mp.startSendingWithKey();
         return System.currentTimeMillis();
     }
 
-    public static void sendMessagesMultiThreaded(String zookeeperHosts) {
+    public void sendMessagesMultiThreaded(String zookeeperHosts) {
         StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, getIstanbulRegionBox());
 
         ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
 
-        RecursiveAction recursiveAction = new MessageProducerRecursiveAction(zookeeperHosts,
+        RecursiveAction recursiveAction = new MessageProducerRecursiveAction(producerTopic, zookeeperHosts,
                 generator, 1000000, 10000, 100);
 
         forkJoinPool.invoke(recursiveAction);
     }
 
-    public static long sendSingleMessageQuery(String zookeeperHosts) {
+    public long sendSingleMessageQuery(String topic, String zookeeperHosts) {
         int streamLength = 1000;
         int batchSize = 50;
 
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, getIstanbulRegionBox());
-        MessageProducer producer = new MessageProducer(zookeeperHosts, generator, streamLength, batchSize);
+        MessageProducer producer = new MessageProducer(producerTopic,
+                zookeeperHosts, generator, streamLength, batchSize);
 
         producer.startSendingWithKey();
         return System.currentTimeMillis();
     }
 
-    public static void receiveResultsAsync(String zookeeperHosts) {
-        Runnable messageConsumer = new MessageConsumer(MessageConsumer.KAFKA_TOPIC_GATHERING_TOPICS_PREFIX,
-                zookeeperHosts);
+    public void receiveResultsAsync(String zookeeperHosts) {
+        Runnable messageConsumer = new MessageConsumer(consumerTopic, zookeeperHosts);
         new Thread(messageConsumer).start();
     }
 
@@ -71,8 +82,12 @@ public class Query {
 
     public static void main(String[] args) {
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
-        long startTime = sendMultiMessageQuery(zookeeperHosts);
+        String clientId = "1";
+        String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
+        String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
+        Query q = new Query(producerTopic, consumerTopic);
+        long startTime = q.sendMultiMessageQuery(zookeeperHosts);
         System.out.println(startTime);
-        receiveResultsAsync(zookeeperHosts);
+        q.receiveResultsAsync(zookeeperHosts);
     }
 }
