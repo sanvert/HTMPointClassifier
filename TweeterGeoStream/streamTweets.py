@@ -13,7 +13,7 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
-streamFilterInterestedRegion = 0
+stream_group = 1
 
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
@@ -27,6 +27,14 @@ GEOBOX_IZMIR = [26.2342, 38.0351, 28.368, 38.367,
 GEOBOX_ANKARA = [31.9586, 39.3283, 33.3868, 40.324,
                  31.04, 40.0072, 31.9586, 40.308,
                  32.2241, 40.308, 32.8742, 40.6261]
+
+GEOBOX_KOCAELI = [29.4094, 40.7542, 30.2578, 41.0333,
+                  29.5681, 40.6153, 30.1357, 40.7542,
+                  29.9374, 41.1161, 30.3524, 41.3434]
+
+GEOBOX_ESKISEHIR = [30.3819, 39.6652, 31.8467, 40.0213,
+                    30.3819, 39.1985, 31.9871, 39.6652,
+                    30.0584, 39.6652, 30.3819, 39.8763]
 
 GEOBOX_EUROPE = [-11.5879977214, 43.009951276, 22.3251176581, 58.5423370438,
                  -10.9337030232, 37.1693101565, 25.5802343813, 43.009951276]
@@ -112,7 +120,7 @@ class LocationTweetListener(tweepy.StreamListener):
             return mean(geo['coordinates'][0], axis=0)
 
 
-if streamFilterInterestedRegion:
+if stream_group == 1:
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ISTANBUL, "Istanbul"))\
         .filter(locations=GEOBOX_ISTANBUL, async=True)
 
@@ -121,6 +129,12 @@ if streamFilterInterestedRegion:
 
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Ankara")) \
         .filter(locations=GEOBOX_ANKARA, async=True)
+elif stream_group == 2:
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_KOCAELI, "Kocaeli")) \
+        .filter(locations=GEOBOX_KOCAELI, async=True)
+
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ESKISEHIR, "Eskisehir")) \
+        .filter(locations=GEOBOX_ESKISEHIR, async=True)
 else:
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Europe")) \
         .filter(locations=GEOBOX_EUROPE, async=True)

@@ -6,15 +6,9 @@ import edu.jhu.htm.core.HTMindexImp;
 import edu.jhu.htm.core.HTMrange;
 import edu.jhu.htm.core.Vector3d;
 import edu.jhu.htm.geometry.Chull;
-import geopackage.MapLoader;
-import mil.nga.geopackage.GeoPackage;
-import mil.nga.geopackage.geom.GeoPackageGeometryData;
-import mil.nga.geopackage.manager.GeoPackageManager;
 import sky.htm.Converter;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.List;
 
 public class HtmRegions implements Serializable {
 
