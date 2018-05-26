@@ -41,6 +41,12 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+    <repository>
+      <id>gemajas</id>
+      <url>http://maven.geomajas.org/</url>
+    </repository>
+  </repositories>
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>

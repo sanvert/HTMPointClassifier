@@ -129,6 +129,35 @@
     </dependency>
 
     <dependency>
+      <groupId>com.vividsolutions</groupId>
+      <artifactId>jts-core</artifactId>
+      <version>1.14.0</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/org.geotools/gt-geojson -->
+    <dependency>
+      <groupId>org.geotools</groupId>
+      <artifactId>gt-geojson</artifactId>
+      <version>10.4</version>
+    </dependency>
+
+
+    <!--<dependency>-->
+      <!--<groupId>org.geotools</groupId>-->
+      <!--<artifactId>gt-jts-wrapper</artifactId>-->
+      <!--<version>19.1</version>-->
+    <!--</dependency>-->
+
+    <!--<mirrors>-->
+      <!--<mirror>-->
+        <!--<id>boundless</id>-->
+        <!--<name>Boundless Repository Mirror</name>-->
+        <!--<url>http://repo.boundlessgeo.com/main</url>-->
+        <!--<mirrorOf>central</mirrorOf>-->
+      <!--</mirror>-->
+    <!--</mirrors>-->
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.12</version>
@@ -143,6 +172,13 @@
       <systemPath>${java.home}/../lib/tools.jar</systemPath>
     </dependency>
   </dependencies>
+
+  <repositories>
+    <repository>
+      <id>gemajas</id>
+      <url>http://maven.geomajas.org/</url>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>

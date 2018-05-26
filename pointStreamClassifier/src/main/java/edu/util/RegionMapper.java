@@ -7,15 +7,29 @@ import sky.model.Region;
 
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RegionMapper {
-    private static final Gson gson = new Gson();
+
+    private static final Gson GSON = new Gson();
+
+    public static final Map<String, Integer> CITY_ID_MAP = new HashMap<>();
+
+    static {
+        CITY_ID_MAP.put("istanbul", 1);
+        CITY_ID_MAP.put("ankara", 2);
+        CITY_ID_MAP.put("izmir", 3);
+        CITY_ID_MAP.put("kocaeli", 4);
+        CITY_ID_MAP.put("eskisehir", 5);
+    }
+
 
     public static List<Region> convert(String fileName) {
         Type typeOfT = new TypeToken<List<Region>>(){}.getType();
-        return gson.fromJson(new InputStreamReader(RegionMapper.class.getClassLoader().getResourceAsStream(fileName)),
+        return GSON.fromJson(new InputStreamReader(RegionMapper.class.getClassLoader().getResourceAsStream(fileName)),
                 typeOfT);
     }
 

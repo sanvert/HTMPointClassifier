@@ -38,6 +38,7 @@ public interface SkipList extends Serializable {
     int size();
 
     /**
+     * Using for test purpose.
      * Finds the smallest long greater than or equal to the given
      * long that is not in this set.
      *
