@@ -73,7 +73,7 @@ public class IntervalSkipList implements SkipList {
                 lastEnd.get(0).next.get(0).compareTo(end) == 0) {
             start = Math.min(lastStart.get(0).next.get(0).start, start);
             end = Math.max(lastEnd.get(0).next.get(0).end, end);
-            removeInterval(lastStart, lastEnd);
+            deleteNodes(lastStart, lastEnd);
             addInterval(start, end);
         } else if (lastStart.get(0).next.get(0).compareTo(start) == 0) {
             lastStart.get(0).next.get(0).end = end;
@@ -85,7 +85,7 @@ public class IntervalSkipList implements SkipList {
 
     }
 
-    public void removeInterval(List<Node> lastStart, List<Node> lastEnd) {
+    public void deleteNodes(List<Node> lastStart, List<Node> lastEnd) {
         deleteNode(lastStart, lastStart.get(0).next.get(0));
         deleteNode(lastEnd, lastEnd.get(0).next.get(0));
     }

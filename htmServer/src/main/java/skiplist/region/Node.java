@@ -5,12 +5,14 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A node in a skip list.
  */
 public class Node implements Serializable {
     private Set<Integer> regionIdSet;
+
     private long start;
     private long end;
 
@@ -77,6 +79,7 @@ public class Node implements Serializable {
     }
 
     public String toString() {
-        return "<" + start + ":" + end + "; " + next.size() + ">";
+        return "<" + start + ":" + end + "; " + next.size() + " regionIds:"
+                + regionIdSet.stream().map(String::valueOf).collect(Collectors.joining("+")) + ">\n";
     }
 }

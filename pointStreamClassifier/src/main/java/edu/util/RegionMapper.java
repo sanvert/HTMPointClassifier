@@ -3,6 +3,8 @@ package edu.util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import skiplist.IntervalSkipList;
+import skiplist.region.RegionAwareIntervalSkipList;
+import skiplist.region.RegionAwareSkipList;
 import sky.model.Region;
 
 import java.io.InputStreamReader;
@@ -31,6 +33,15 @@ public class RegionMapper {
         Type typeOfT = new TypeToken<List<Region>>(){}.getType();
         return GSON.fromJson(new InputStreamReader(RegionMapper.class.getClassLoader().getResourceAsStream(fileName)),
                 typeOfT);
+    }
+
+    public static RegionAwareSkipList generateIntervalSkipList(String fileName) {
+        final RegionAwareSkipList regionAwareIntervalSkipList = new RegionAwareIntervalSkipList();
+        convert(fileName).stream()
+                .forEach(region -> region.getPairs().stream()
+                        .forEach(pairs -> pairs
+                                .forEach(pair -> regionAwareIntervalSkipList.addInterval(region.getId(), pair.getX(), pair.getY()))));
+        return regionAwareIntervalSkipList;
     }
 
     public static List<IntervalSkipList> convertIntoSkipLists(String fileName) {
@@ -62,5 +73,8 @@ public class RegionMapper {
         System.out.println(regions.get(0).toString());
         List<IntervalSkipList> regionsSL = convertIntoSkipLists("regionsHTM.json");
         System.out.println(regionsSL.get(0));
+
+        RegionAwareSkipList regionAwareSkipList = generateIntervalSkipList("regionsHTM.json");
+        System.out.println(regionAwareSkipList);
     }
 }

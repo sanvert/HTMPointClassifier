@@ -6,7 +6,7 @@ import java.util.List;
 
 public class Region {
     private String name;
-    private Long id;
+    private Integer id;
     private List<List<Pair<Long, Long>>> pairs;
 
     public String getName() {
@@ -17,11 +17,11 @@ public class Region {
         this.name = name;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(final Long id) {
+    public void setId(final Integer id) {
         this.id = id;
     }
 

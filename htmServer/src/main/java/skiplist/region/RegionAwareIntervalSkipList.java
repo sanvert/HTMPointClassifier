@@ -3,9 +3,10 @@ package skiplist.region;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
-public class RegionAwareIntervalSkipList implements IntervalSkipList {
+public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
     /**
      * Head node in skip list.
      */
@@ -77,31 +78,58 @@ public class RegionAwareIntervalSkipList implements IntervalSkipList {
         addIntervalRange(regionIdSet, start, end);
     }
 
+    private boolean isEqualSets(Set<Integer> a, Set<Integer> b) {
+        return Objects.nonNull(a) && Objects.nonNull(b)
+                && a.size() == b.size() && a.containsAll(b);
+    }
 
     private void addIntervalRange(Set<Integer> regionIdSet, long start, long end) {
         //OK
-        List<Node> lastStart = find(start);
+        List<Node> last = find(start);
         List<Node> lastEnd = find(end);
-        if (lastStart.get(0).getNext().get(0).compareTo(start) == 0 &&
+        if (last.get(0).getNext().get(0).compareTo(start) == 0 &&
                 lastEnd.get(0).getNext().get(0).compareTo(end) == 0) {
 
-            Node currentStart = lastStart.get(0).getNext().get(0);
-            Set<Integer> currentStartNodeSet = currentStart.getRegionIdSet();
+            Node current = last.get(0).getNext().get(0);
+            Set<Integer> currentStartNodeSet = current.getRegionIdSet();
             Node currentEnd = lastEnd.get(0).getNext().get(0);
             Set<Integer> currentEndNodeSet = currentEnd.getRegionIdSet();
 
-            if(currentStart == currentEnd) {
-                currentStart.addRegionIds(regionIdSet);
+            if(current == currentEnd) {
+                System.out.println("EQUAL");
+                if(!isEqualSets(currentStartNodeSet, regionIdSet)) {
+                    if(current.getStart() == start && current.getEnd() == end) {
+                        current.addRegionIds(regionIdSet);
+                    } else if(current.getEnd() == end) {
+                        deleteNode(last, last.get(0).getNext().get(0));
+                        addInterval(currentStartNodeSet, current.getStart(), start - 1);
+                        regionIdSet.addAll(currentStartNodeSet);
+                        addInterval(regionIdSet, start, end);
+                    } else if(current.getStart() == start) {
+                        deleteNode(last, last.get(0).getNext().get(0));
+                        addInterval(currentStartNodeSet, end + 1, current.getEnd());
+                        regionIdSet.addAll(currentStartNodeSet);
+                        addInterval(regionIdSet, start, end);
+                    } else {
+                        deleteNode(last, last.get(0).getNext().get(0));
+                        addInterval(currentStartNodeSet, current.getStart(), start - 1);
+                        addInterval(currentStartNodeSet, end + 1, current.getEnd());
+                        regionIdSet.addAll(currentStartNodeSet);
+                        addInterval(regionIdSet, start, end);
+                    }
+                }
             } else {
-                removeInterval(lastStart, lastEnd);
+                System.out.println("Not EQUAL");
+
+                deleteNodes(last, lastEnd);
 
                 currentStartNodeSet.removeAll(regionIdSet);
                 currentEndNodeSet.removeAll(regionIdSet);
                 if(currentStartNodeSet.isEmpty() && currentEndNodeSet.isEmpty()) {
-                    addInterval(regionIdSet, currentStart.getStart(), currentEnd.getEnd());
+                    addInterval(regionIdSet, current.getStart(), currentEnd.getEnd());
                 } else if(currentStartNodeSet.isEmpty()) {
                     //Add start node interval combined non-conflicting part of new interval.
-                    addInterval(regionIdSet, currentStart.getStart(), currentEnd.getStart() - 1);
+                    addInterval(regionIdSet, current.getStart(), currentEnd.getStart() - 1);
                     //Add new interval conflicting part.
                     regionIdSet.addAll(currentEnd.getRegionIdSet());
                     addInterval(regionIdSet, currentEnd.getStart(), Math.min(end, currentEnd.getEnd()));
@@ -111,23 +139,23 @@ public class RegionAwareIntervalSkipList implements IntervalSkipList {
                     }
                 } else if(currentEndNodeSet.isEmpty()) {
                     //Add end node interval combined non-conflicting part of new interval.
-                    addInterval(regionIdSet, currentStart.getEnd() + 1, currentEnd.getEnd());
+                    addInterval(regionIdSet, current.getEnd() + 1, currentEnd.getEnd());
                     //Add new interval conflicting part.
-                    regionIdSet.addAll(currentStart.getRegionIdSet());
-                    addInterval(regionIdSet, Math.max(start, currentStart.getStart()), currentStart.getEnd());
-                    if(start > currentStart.getStart()) {
-                        addInterval(currentStart.getRegionIdSet(), currentStart.getStart(), start - 1);
+                    regionIdSet.addAll(current.getRegionIdSet());
+                    addInterval(regionIdSet, Math.max(start, current.getStart()), current.getEnd());
+                    if(start > current.getStart()) {
+                        addInterval(current.getRegionIdSet(), current.getStart(), start - 1);
                     }
                 } else {
                     //Add left interval.
-                    if(start > currentStart.getStart()) {
-                        addInterval(currentStart.getRegionIdSet(), currentStart.getStart(), start - 1);
+                    if(start > current.getStart()) {
+                        addInterval(current.getRegionIdSet(), current.getStart(), start - 1);
                     }
                     Set<Integer> leftConflictingSet = new HashSet<>(regionIdSet);
-                    leftConflictingSet.addAll(currentStart.getRegionIdSet());
-                    addInterval(leftConflictingSet, start, currentStart.getEnd());
+                    leftConflictingSet.addAll(current.getRegionIdSet());
+                    addInterval(leftConflictingSet, start, current.getEnd());
                     //Add medium interval.
-                    addInterval(regionIdSet, currentStart.getEnd() + 1, currentEnd.getStart() - 1);
+                    addInterval(regionIdSet, current.getEnd() + 1, currentEnd.getStart() - 1);
                     //Add right interval.
                     Set<Integer> rightConflictingSet = new HashSet<>(regionIdSet);
                     rightConflictingSet.addAll(currentEnd.getRegionIdSet());
@@ -138,9 +166,9 @@ public class RegionAwareIntervalSkipList implements IntervalSkipList {
                 }
             }
 
-        } else if (lastStart.get(0).getNext().get(0).compareTo(start) == 0) {
+        } else if (last.get(0).getNext().get(0).compareTo(start) == 0) {
             //OK
-            Node current = lastStart.get(0).getNext().get(0);
+            Node current = last.get(0).getNext().get(0);
             Set<Integer> currentNodeSet = current.getRegionIdSet();
             currentNodeSet.removeAll(regionIdSet);
             if (currentNodeSet.isEmpty()) {
@@ -174,12 +202,12 @@ public class RegionAwareIntervalSkipList implements IntervalSkipList {
             }
         } else {
             //OK
-            addNewNode(regionIdSet, lastStart, start, end);
+            addNewNode(regionIdSet, last, start, end);
         }
     }
 
-    public void removeInterval(List<Node> lastStart, List<Node> lastEnd) {
-        deleteNode(lastStart, lastStart.get(0).getNext().get(0));
+    public void deleteNodes(List<Node> last, List<Node> lastEnd) {
+        deleteNode(last, last.get(0).getNext().get(0));
         deleteNode(lastEnd, lastEnd.get(0).getNext().get(0));
     }
 
@@ -449,14 +477,18 @@ public class RegionAwareIntervalSkipList implements IntervalSkipList {
 
         s = new RegionAwareIntervalSkipList();
         System.out.println(s.isInside(25));
-        s.addInterval(def, 24, 45);
+        s.addInterval(1, 24, 45);
         System.out.println(s);
         System.out.println(s.isInside(25));
-        s.addInterval(def, 101, 111);
-        s.addInterval(def, 10, 19);
-        s.addInterval(def, 88, 99);
+        s.addInterval(1, 101, 111);
+        s.addInterval(2, 103, 111);
+
+        s.addInterval(1, 10, 19);
+        s.addInterval(1, 88, 99);
         System.out.println(s);
         System.out.println(s.isInside(90));
+        System.out.println(s.isInside(111));
+        System.out.println(s.isInside(101));
 
     }
 

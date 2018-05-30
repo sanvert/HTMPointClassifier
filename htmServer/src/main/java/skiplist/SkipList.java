@@ -15,6 +15,7 @@ public interface SkipList extends Serializable {
      */
     void add(long n);
 
+    void addInterval(long x, long y);
     /**
      * Removes the given long from this set if it is in the set.
      *
