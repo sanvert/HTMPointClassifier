@@ -96,7 +96,6 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
             Set<Integer> currentEndNodeSet = currentEnd.getRegionIdSet();
 
             if(current == currentEnd) {
-                System.out.println("EQUAL");
                 if(!isEqualSets(currentStartNodeSet, regionIdSet)) {
                     if(current.getStart() == start && current.getEnd() == end) {
                         current.addRegionIds(regionIdSet);
@@ -119,8 +118,6 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
                     }
                 }
             } else {
-                System.out.println("Not EQUAL");
-
                 deleteNodes(last, lastEnd);
 
                 currentStartNodeSet.removeAll(regionIdSet);
@@ -482,6 +479,9 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
         System.out.println(s.isInside(25));
         s.addInterval(1, 101, 111);
         s.addInterval(2, 103, 111);
+
+        s.addInterval(2, 118, 123);
+        s.addInterval(3, 110, 119);
 
         s.addInterval(1, 10, 19);
         s.addInterval(1, 88, 99);
