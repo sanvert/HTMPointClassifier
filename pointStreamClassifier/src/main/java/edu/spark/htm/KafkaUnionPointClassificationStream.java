@@ -4,7 +4,7 @@ import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
 import edu.util.PropertyMapper;
-import edu.util.RegionMapper;
+import edu.util.RegionHTMIndex;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -38,6 +38,9 @@ public class KafkaUnionPointClassificationStream {
     private static final boolean DEBUG = true;
     private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
 
+    private static final String MASTER_ADDRESS = "spark://nl1lxl-108916.ttg.global:7077";
+    private static final String REGIONS_JSON ="regionsHTM.json";
+
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
         String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
@@ -57,7 +60,7 @@ public class KafkaUnionPointClassificationStream {
                 .registerKryoClasses(new Class[]{IntervalSkipList.class, IntervalSkipList.Node.class});
 
         if (DEBUG) {
-            sparkConf.setMaster("spark://nl1lxl-108916.ttg.global:7077");
+            sparkConf.setMaster(MASTER_ADDRESS);
             //.set("spark.driver.bindAddress","127.0.0.1")
         }
 
@@ -72,7 +75,8 @@ public class KafkaUnionPointClassificationStream {
 
         final int htmDepth = 20;
 
-        final List<IntervalSkipList> intervalSkipLists = RegionMapper.convertIntoSkipLists("regionsHTM.json");
+        RegionHTMIndex regionMapper = new RegionHTMIndex(REGIONS_JSON);
+        //final List<IntervalSkipList> intervalSkipLists =regionMapper.convertIntoSkipLists();
 
         try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 
@@ -119,13 +123,13 @@ public class KafkaUnionPointClassificationStream {
                         long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair._1), Double.valueOf(pair._2), htmDepth);
                         boolean isInside = false;
                         String id = null;
-                        for (IntervalSkipList skipList : intervalSkipLists) {
-                            isInside = skipList.contains(hid);
-                            if (isInside) {
-                                id = skipList.getId();
-                                break;
-                            }
-                        }
+//                        for (IntervalSkipList skipList : intervalSkipLists) {
+//                            isInside = skipList.contains(hid);
+//                            if (isInside) {
+//                                id = skipList.getId();
+//                                break;
+//                            }
+//                        }
 
                         System.out.println("worker log");
                         return isInside ? id + "-" + groupId : "-";

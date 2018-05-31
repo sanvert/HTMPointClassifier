@@ -1,13 +1,13 @@
 package edu.spark.htm.redirect;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import edu.kafka.producer.MessageSenderFactory;
-import edu.kafka.producer.MessageSenderWrapper;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
-import edu.kafka.producer.MessageSender;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
 import edu.util.PropertyMapper;
-import edu.util.RegionMapper;
+import edu.util.RTreeIndex;
+import edu.util.RegionHTMIndex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
@@ -30,6 +30,9 @@ import org.apache.spark.util.AccumulatorV2;
 import scala.Tuple2;
 import scala.Tuple3;
 import skiplist.IntervalSkipList;
+import skiplist.region.Node;
+import skiplist.region.RegionAwareIntervalSkipList;
+import skiplist.region.RegionAwareSkipList;
 import sky.sphericalcurrent.ProcessRange;
 
 import java.util.ArrayList;
@@ -37,6 +40,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
@@ -48,6 +53,9 @@ public class KafkaUnionPCMultiKeyedStream {
             = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
     private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.defaults().get("report.period"));
     private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
+    private static final String REGIONS_JSON ="regionsHTM.json";
+
+    private static final String MASTER_ADDRESS = "spark://nl1lxl-108916.ttg.global:7077";
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
@@ -66,10 +74,13 @@ public class KafkaUnionPCMultiKeyedStream {
                 .setAppName("KafkaStreamingTweetCoordinates")
                 //.set("spark.storage.memoryFraction", "0.5") // Deprecated since 1.6
                 .set("spark.serializer", KryoSerializer.class.getName())
-                .registerKryoClasses(new Class[]{IntervalSkipList.class, IntervalSkipList.Node.class});
+                .registerKryoClasses(new Class[]{RegionHTMIndex.class,
+                                                    RTreeIndex.class,
+                                                    RegionAwareIntervalSkipList.class,
+                                                    Node.class});
 
         if (DEBUG) {
-            sparkConf.setMaster("spark://nl1lxl-108916.ttg.global:7077");
+            sparkConf.setMaster(MASTER_ADDRESS);
             //.set("spark.driver.bindAddress","127.0.0.1")
         }
 
@@ -86,7 +97,8 @@ public class KafkaUnionPCMultiKeyedStream {
 
         final int htmDepth = 20;
 
-        final List<IntervalSkipList> intervalSkipLists = RegionMapper.convertIntoSkipLists("regionsHTM.json");
+        RegionHTMIndex regionHTMIndex = new RegionHTMIndex(REGIONS_JSON);
+        RTreeIndex rTreeIndex = new RTreeIndex(regionHTMIndex);
 
         try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 
@@ -128,23 +140,30 @@ public class KafkaUnionPCMultiKeyedStream {
                         for (String coordinate : coordinateArray) {
                             String[] pair = coordinate.split(";");
                             if (pair.length == 2) {
-                                long hid = ProcessRange.fHtmLatLon(Double.valueOf(pair[0]), Double.valueOf(pair[1]),
-                                        htmDepth);
+
+                                double latitude = Double.valueOf(pair[0]);
+                                double longitude = Double.valueOf(pair[1]);
+
+                                long hid = ProcessRange.fHtmLatLon(latitude, longitude, htmDepth);
+                                Set<Integer> regionIdSet = regionHTMIndex.getResidingRegionIdSet(hid);
 
                                 String id = StringUtils.EMPTY;
-                                for (IntervalSkipList skipList : intervalSkipLists) {
-                                    if (skipList.contains(hid)) {
-                                        id = skipList.getId();
-                                        break;
+                                if(regionIdSet.size() == 1) {
+                                    id = String.valueOf(regionIdSet.iterator().next());
+                                } else if (regionIdSet.size() > 1) {
+                                    Coordinate c = new Coordinate(longitude, latitude);
+                                    Optional<Integer> regionId = rTreeIndex.getResidingRegionId(regionIdSet, c);
+                                    if(regionId.isPresent()) {
+                                        id = String.valueOf(regionId.get());
                                     }
                                 }
+
                                 resultBuilder.append(id).append(",");
                             } else {
                                 System.err.println("malformed coordinate:" + coordinate);
                                 resultBuilder.append("-").append(",");
                             }
                         }
-
 
                         MessageSenderFactory.getSender(topic.split("-")[1]).send(key, resultBuilder.toString());
 

@@ -41,7 +41,7 @@ public class IntervalSkipList implements SkipList {
      * @param key
      * @return Node contains key.
      */
-    public Node isInside(long key) {
+    private Node isInside(long key) {
         Node curr = head;
         int level = head.next.size() - 1;
         while (level >= 0) {

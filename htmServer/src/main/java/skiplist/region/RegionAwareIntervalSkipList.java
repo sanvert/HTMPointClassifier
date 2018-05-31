@@ -1,6 +1,7 @@
 package skiplist.region;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +41,7 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
      * @param key
      * @return Node contains key.
      */
-    public Node isInside(long key) {
+    private Node isInside(long key) {
         Node curr = head;
         int level = head.getNext().size() - 1;
         while (level >= 0) {
@@ -56,6 +57,16 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
         return curr.getNext().get(0).compareTo(key) == 0 ? curr.getNext().get(0) : null;
     }
 
+    @Override
+    public Set<Integer> regionIdSet(final long n) {
+        Node node = isInside(n);
+        if(node == null) {
+            return Collections.emptySet();
+        }
+        return node.getRegionIdSet();
+    }
+
+    @Override
     public void addInterval(int regionId, long start, long end) {
         Set<Integer> regionIdSet = new HashSet<>();
         regionIdSet.add(regionId);
@@ -239,6 +250,7 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
      *
      * @return the size of this skip list
      */
+    @Override
     public int size() {
         // from an external point of view, size does not include the head
         return nodeCounts.get(0);
@@ -280,6 +292,7 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
      * @param value a long in [Long.MIN_VALUE+1, Long.MAX_VALUE-1]
      * @return true if that value is in this skip list and false otherwise
      */
+    @Override
     public boolean contains(long value) {
         Node last = find(value).get(0);
 
@@ -291,6 +304,7 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
      *
      * @param key a long in [Long.MIN_VALUE+2, Long.MAX_VALUE-2]
      */
+    @Override
     public void add(Set<Integer> regionIdSet, long key) {
         List<Node> last = find(key);
         Node lastNode = last.get(0);
