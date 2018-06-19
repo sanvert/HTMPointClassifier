@@ -262,7 +262,7 @@ public class RegionAwareIntervalSkipList implements RegionAwareSkipList {
      * at the nodes from the corresponding levels is either the node containing
      * the data to search for or the 1st node beyond it.  The value to search
      * for is in this skip list if and only if
-     * <code>last.get(0).getNext().get(0).equals(key)</code>
+     * <code>last.get(0).getNext().get(0)compareTo(key) == 0</code>
      *
      * @param key a long in [Long.MIN_VALUE+1, Long.MAX_VALUE]
      * @return a list of nodes before the key at each level
