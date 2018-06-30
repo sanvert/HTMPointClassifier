@@ -13,7 +13,7 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
-stream_group = 1
+stream_group = 2
 
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
@@ -58,7 +58,7 @@ class LocationTweetListener(tweepy.StreamListener):
 
     def on_data(self, data):
         try:
-            eligible = None
+            geo_present = None
             json_data = json.loads(data)
 
             output_json = dict()
@@ -67,27 +67,26 @@ class LocationTweetListener(tweepy.StreamListener):
             output_json['created_at'] = json_data['created_at']
 
             if json_data['geo']:
-                eligible = True
+                geo_present = True
                 output_json['coordinates'] = self.convert_geo_element(json_data['geo'])
 
-            if json_data['place']:
+            if not geo_present and json_data['place'] and json_data['place']['place_type'] == 'city':
                 output_json['city'] = json_data['place']['full_name']
-                if not eligible and json_data['place']['bounding_box']:
+                if json_data['place']['bounding_box']:
                     output_json['coordinates'] \
                         = list(self.convert_geo_element(json_data['place']['bounding_box'])[::-1])
-                elif not eligible:
+                else:
                     output_json['coordinates'] = self.geo_avg
-                eligible = True
+                geo_present = True
 
-            if eligible and self.check_if_near_geo_box(output_json['coordinates']):
+            if geo_present and self.check_if_near_geo_box(output_json['coordinates']):
                 self.file.write(json.dumps(output_json) + "\n")
                 self.num_of_recs = self.num_of_recs + 1
                 if self.num_of_recs % 10 == 0:
-                    print(str(self.num_of_recs) + " records are processed for " + self.geo_name)
+                    print(str(self.num_of_recs) + " records are collected for " + self.geo_name)
                     self.file.flush()
-
-        except Exception as e:
-            print(e)
+        except Exception as exc:
+            print(exc)
 
         return True
 
@@ -105,12 +104,12 @@ class LocationTweetListener(tweepy.StreamListener):
         return False  # Kill the stream
 
     def check_if_near_geo_box(self, point):
-        return abs(point[0] - self.geo_avg[0]) <= 1.5 and abs(point[1] - self.geo_avg[1])
+        return abs(point[0] - self.geo_avg[0]) <= 1.1 and abs(point[1] - self.geo_avg[1])
 
     def on_exit(self):
         self.file.flush()
         self.file.close()
-        print("Goodbye! " + self.geo_name)
+        print("Completed! " + self.geo_name)
 
     @staticmethod
     def convert_geo_element(geo):
@@ -120,7 +119,7 @@ class LocationTweetListener(tweepy.StreamListener):
             return mean(geo['coordinates'][0], axis=0)
 
 
-if stream_group == 1:
+if stream_group == 2:
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ISTANBUL, "Istanbul"))\
         .filter(locations=GEOBOX_ISTANBUL, async=True)
 
@@ -129,12 +128,12 @@ if stream_group == 1:
 
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Ankara")) \
         .filter(locations=GEOBOX_ANKARA, async=True)
-elif stream_group == 2:
+elif stream_group == 1:
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_KOCAELI, "Kocaeli")) \
         .filter(locations=GEOBOX_KOCAELI, async=True)
 
     tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ESKISEHIR, "Eskisehir")) \
         .filter(locations=GEOBOX_ESKISEHIR, async=True)
 else:
-    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_ANKARA, "Europe")) \
+    tweepy.Stream(auth=auth, listener=LocationTweetListener(GEOBOX_EUROPE, "Europe")) \
         .filter(locations=GEOBOX_EUROPE, async=True)
