@@ -50,7 +50,7 @@ public class MessageProducer {
             properties.put(ProducerConfig.RETRIES_CONFIG, 0);
         }
 
-        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //1: gzip, 2: snappy
+        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //gzip, snappy, lz4
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1024));
 
         //Parameters for previous versions

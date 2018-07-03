@@ -27,7 +27,6 @@ import org.apache.spark.streaming.kafka010.KafkaUtils;
 import org.apache.spark.streaming.kafka010.LocationStrategies;
 import org.apache.spark.util.AccumulatorV2;
 import scala.Tuple2;
-import skiplist.IntervalSkipList;
 import skiplist.region.Node;
 import skiplist.region.RegionAwareIntervalSkipList;
 import sky.sphericalcurrent.ProcessRange;
@@ -46,8 +45,8 @@ public class KafkaUnionPCSingleKeyedStream {
     private static final Level LOG_LEVEL = Level.WARN;
     private static final boolean DEBUG = false;
     private static final Duration BATCH_DURATION
-            = Durations.milliseconds(Long.valueOf(PropertyMapper.defaults().get("spark.kafka.direct.batch.duration")));
-    private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.defaults().get("report.period"));
+            = Durations.milliseconds(Long.valueOf(PropertyMapper.readDefaultProps().get("spark.kafka.direct.batch.duration")));
+    private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.readDefaultProps().get("report.period"));
     private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
     private static final String REGIONS_JSON ="regionsHTM.json";
 
@@ -56,13 +55,13 @@ public class KafkaUnionPCSingleKeyedStream {
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
 
-        final String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
+        final String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
         final ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 
-        int numOfStreams = Integer.parseInt(PropertyMapper.defaults().get("spark.stream.count"));
+        int numOfStreams = Integer.parseInt(PropertyMapper.readDefaultProps().get("spark.stream.count"));
         numOfStreams = numOfStreams == 0 ? 4 : numOfStreams;
 
-        final String groupId = PropertyMapper.defaults().get("kafka.group.id");
+        final String groupId = PropertyMapper.readDefaultProps().get("kafka.group.id");
 
 
         // Create context with a specified batch interval

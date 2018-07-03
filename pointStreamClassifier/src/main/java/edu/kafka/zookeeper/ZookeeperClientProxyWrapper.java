@@ -10,7 +10,7 @@ public class ZookeeperClientProxyWrapper {
 
     private static class ZookeeperClientProxyHolder {
         private static ZooKeeperClientProxy zooKeeperClientProxy
-                = new ZooKeeperClientProxy(PropertyMapper.defaults().get("zookeeper.host.list"));
+                = new ZooKeeperClientProxy(PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
     }
 
     public static ZooKeeperClientProxy getInstance() {

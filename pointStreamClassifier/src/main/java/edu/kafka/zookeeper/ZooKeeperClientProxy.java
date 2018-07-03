@@ -60,7 +60,7 @@ public class ZooKeeperClientProxy {
 
     //Testing purpose only
     public static void main(String[] args) {
-        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
         System.out.println(zookeeperHosts);
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
         zooKeeperClientProxy.getKafkaTopics().stream().forEach(System.out::println);

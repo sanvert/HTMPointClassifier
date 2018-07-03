@@ -38,12 +38,12 @@ public class KafkaUnionPointClassificationStream {
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(Level.WARN);
-        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
 
-        int numOfStreams = Integer.parseInt(PropertyMapper.defaults().get("spark.stream.count"));
+        int numOfStreams = Integer.parseInt(PropertyMapper.readDefaultProps().get("spark.stream.count"));
         numOfStreams = numOfStreams == 0 ? 4 : numOfStreams;
 
-        String groupId = PropertyMapper.defaults().get("kafka.group.id");
+        String groupId = PropertyMapper.readDefaultProps().get("kafka.group.id");
 
         ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 

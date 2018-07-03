@@ -17,7 +17,7 @@ public class ArgumentUtils {
 
     public static String readArgumentOverriding(String[] arr, int idx, String name) {
         try {
-            PropertyMapper.defaults().putIfAbsent(name, arr[idx]);
+            PropertyMapper.readDefaultProps().putIfAbsent(name, arr[idx]);
             return arr[idx];
         } catch(ArrayIndexOutOfBoundsException e) {
         }

@@ -19,7 +19,7 @@ public class PropertyMapper {
         }
     }
 
-    public static Map<String, String> defaults() {
+    public static Map<String, String> readDefaultProps() {
         return readPropertyValues(APPLICATION_PROPERTIES);
     }
 

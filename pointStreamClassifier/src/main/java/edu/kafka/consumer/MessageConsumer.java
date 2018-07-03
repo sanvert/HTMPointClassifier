@@ -74,7 +74,7 @@ public class MessageConsumer implements Runnable {
 
     public static void main(String[] args) {
         Runnable messageConsumer = new MessageConsumer(MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + "1",
-                PropertyMapper.defaults().get("kafka.group.id"));
+                PropertyMapper.readDefaultProps().get("kafka.group.id"));
         new Thread(messageConsumer).start();
     }
 }

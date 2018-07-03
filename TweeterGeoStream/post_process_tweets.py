@@ -12,8 +12,8 @@ def process_geolocation_files(json_input_folder, json_output_folder):
         json_file_path = os.path.join(json_input_folder, json_file)
         base_file_name = os.path.basename(json_file_path)
         json_file_region = base_file_name.split("_")[0].lower()
+        print(base_file_name)
         with open(json_file_path, "r") as f:
-            print(json_file_region)
             lines = f.readlines()
             for line in lines:
                 json_line = json.loads(line)

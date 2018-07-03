@@ -20,7 +20,8 @@ def get_geocode_json(query_str):
         print(http_error)
         return []
     finally:
-        time.sleep(1.1)
+        time.sleep(0.85)
+
 
 def get_reverse_geocode_json(lat, lon):
     try:
@@ -37,18 +38,11 @@ def get_reverse_geocode_json(lat, lon):
         print(http_error)
         return []
     finally:
-        time.sleep(1.1)
+        time.sleep(0.9)
 
 
 # data = get_geocode_json('izmir')
-#
 # box = [float(i) for i in data[0]['boundingbox']]
 # print(box)
 # avg = [mean(box[0:1]), mean(box[2:3])]
-# print(data)
 # print(avg)
-
-# for i in range(1, 1000):
-#     rev_data = get_reverse_geocode_json('40.8819', '29.866180999999997')
-#     print(str(rev_data).lower().find('kocaeli'))
-#     print(rev_data)

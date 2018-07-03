@@ -81,7 +81,7 @@ public class Query {
     }
 
     public static void main(String[] args) {
-        String zookeeperHosts = PropertyMapper.defaults().get("zookeeper.host.list");
+        String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
         String clientId = "1";
         String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
         String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
