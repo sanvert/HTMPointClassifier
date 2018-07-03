@@ -38,11 +38,15 @@ public class KafkaUnionPointClassificationStream {
     private static final boolean DEBUG = true;
     private static final Duration BATCH_DURATION = Durations.milliseconds(1000);
 
-    private static final String MASTER_ADDRESS = "spark://nl1lxl-108916.ttg.global:7077";
     private static final String REGIONS_JSON ="regionsHTM.json";
+
+    private static String MASTER_ADDRESS;
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
+
+        MASTER_ADDRESS = PropertyMapper.readDefaultProps().get("spark.default.master.address");
+
         String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
 
         int numOfStreams = Integer.parseInt(PropertyMapper.readDefaultProps().get("spark.stream.count"));
@@ -142,7 +146,7 @@ public class KafkaUnionPointClassificationStream {
             sumCoordinates.foreachRDD(rdd -> {
                 resultReport.add(rdd.collectAsMap());
                 if (resultReport.isZero()) {
-                    System.out.println("NO RECORDS: " + System.currentTimeMillis());
+                    System.out.println("NO PROCESSED RECORDS, Time in ms: " + System.currentTimeMillis());
                 }
             });
 

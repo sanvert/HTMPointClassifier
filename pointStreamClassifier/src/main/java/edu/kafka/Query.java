@@ -33,7 +33,7 @@ public class Query {
         int batchSize = 40;
 
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(0.9, getIstanbulRegionBox(), multiCount);
+                = new MultiRandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion(), multiCount);
 
         MessageProducer mp = new MultiMessageProducer(producerTopic, zookeeperHosts, generator, streamLength,
                 multiCount, batchSize);
@@ -42,7 +42,7 @@ public class Query {
     }
 
     public void sendMessagesMultiThreaded(String zookeeperHosts) {
-        StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, getIstanbulRegionBox());
+        StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion());
 
         ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
 
@@ -57,7 +57,7 @@ public class Query {
         int batchSize = 50;
 
         StreamGenerator<Pair> generator
-                = new RandomCoordinateGenerator(1.0, getIstanbulRegionBox());
+                = new RandomCoordinateGenerator(1.0, getBBAroundIstanbulRegion());
         MessageProducer producer = new MessageProducer(producerTopic,
                 zookeeperHosts, generator, streamLength, batchSize);
 
@@ -70,7 +70,7 @@ public class Query {
         new Thread(messageConsumer).start();
     }
 
-    private static RegionBox getIstanbulRegionBox() {
+    private static RegionBox getBBAroundIstanbulRegion() {
         //Region to generate random coordinates - Istanbul
         double minLatitude = 40.780000;
         double maxLatitude = 41.339800;

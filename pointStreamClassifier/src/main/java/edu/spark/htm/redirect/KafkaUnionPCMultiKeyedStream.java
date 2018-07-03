@@ -53,11 +53,10 @@ public class KafkaUnionPCMultiKeyedStream {
     private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
     private static final String REGIONS_JSON ="regionsHTM.json";
 
-    private static String MASTER_ADDRESS = "spark://nl1lxl-108916.ttg.global:7077";
+    private static String MASTER_ADDRESS;
 
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
-
 
         MASTER_ADDRESS = PropertyMapper.readDefaultProps().get("spark.default.master.address");
         final String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
@@ -183,7 +182,7 @@ public class KafkaUnionPCMultiKeyedStream {
             sumCoordinates.foreachRDD(rdd -> {
                 resultReport.add(rdd.collectAsMap());
                 if (resultReport.isZero()) {
-                    System.out.println("NO RECORDS: " + System.currentTimeMillis());
+                    System.out.println("NO PROCESSED RECORDS, Time in ms: " + System.currentTimeMillis());
                 }
             });
 

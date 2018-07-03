@@ -35,8 +35,4 @@ public class ArgumentUtils {
     public static int readIntegerArgumentSilently(String[] arr, int idx) {
         return Integer.parseInt(readArgumentSilently(arr, idx, "0"));
     }
-
-    public static long passedTimeInMsec(long nsStart, long nsEnd) {
-        return TimeUnit.NANOSECONDS.toMillis(nsEnd) - TimeUnit.NANOSECONDS.toMillis(nsStart);
-    }
 }

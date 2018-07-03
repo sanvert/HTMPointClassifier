@@ -55,7 +55,7 @@ public class KafkaUnionPointClassificationStream {
                 .registerKryoClasses(new Class[]{HTMrange.class, SkipList.class});
 
         if (DEBUG) {
-            sparkConf.setMaster("spark://nl1lxl-108916.ttg.global:7077");
+            sparkConf.setMaster(PropertyMapper.readDefaultProps().get("spark.default.master.address"));
             //.set("spark.driver.bindAddress","127.0.0.1")
         }
 
