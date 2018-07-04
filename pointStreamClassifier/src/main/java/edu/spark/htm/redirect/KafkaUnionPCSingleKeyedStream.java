@@ -4,6 +4,7 @@ import com.vividsolutions.jts.geom.Coordinate;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
 import edu.spark.accumulator.MapAccumulator;
 import edu.spark.report.ReportTask;
+import edu.util.ArgumentUtils;
 import edu.util.PropertyMapper;
 import edu.util.RTreeIndex;
 import edu.util.RegionHTMIndex;
@@ -55,9 +56,10 @@ public class KafkaUnionPCSingleKeyedStream {
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
 
-        MASTER_ADDRESS = PropertyMapper.readDefaultProps().get("spark.default.master.address");
-
-        final String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
+        MASTER_ADDRESS = ArgumentUtils.readCLIArgumentSilently(args, 1,
+                PropertyMapper.readDefaultProps().get("spark.default.master.address"));
+        final String zookeeperHosts = ArgumentUtils.readCLIArgumentSilently(args, 0,
+                PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
         final ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 
         int numOfStreams = Integer.parseInt(PropertyMapper.readDefaultProps().get("spark.stream.count"));

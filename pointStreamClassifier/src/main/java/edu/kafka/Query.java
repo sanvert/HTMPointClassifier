@@ -29,7 +29,7 @@ public class Query {
 
     public long sendMultiMessageQuery(String zookeeperHosts) {
         int streamLength = 500000;
-        int multiCount = 20;
+        int multiCount = 40;
         int batchSize = 40;
 
         StreamGenerator<Pair> generator

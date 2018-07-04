@@ -32,7 +32,18 @@ public class ArgumentUtils {
         return def;
     }
 
-    public static int readIntegerArgumentSilently(String[] arr, int idx) {
-        return Integer.parseInt(readArgumentSilently(arr, idx, "0"));
+    public static String readCLIArgumentSilently(String[] arr, int idx, String def) {
+        if(arr == null) {
+            return def;
+        }
+
+        String[] args = readArgumentsSilently(arr);
+        return readArgumentSilently(args, idx, def);
+    }
+
+    public static void main(String[] args) {
+        String[] argTest = new String[]{"app=localhost:2181;spark://nl1lxl-108916.ttg.global:7077"};
+        System.out.println(readCLIArgumentSilently(null, 2, "aa"));
+        System.out.println(readCLIArgumentSilently(argTest, 1, "aa"));
     }
 }

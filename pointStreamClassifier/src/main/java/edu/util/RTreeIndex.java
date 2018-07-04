@@ -9,19 +9,29 @@ import com.vividsolutions.jts.geom.Location;
 import com.vividsolutions.jts.geom.MultiPolygon;
 import org.geotools.geojson.geom.GeometryJSON;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Serializable;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RTreeIndex implements Serializable {
 
@@ -50,15 +60,23 @@ public class RTreeIndex implements Serializable {
 
     private void create() throws IOException, URISyntaxException {
 
-        final Path paths = Paths.get(ClassLoader.getSystemResource("geojson").toURI());
+//        final Map<String, String> env = new HashMap<>();
+//        env.put( "create", "true" );
+//        final FileSystem fs = FileSystems
+//                .newFileSystem(URI.create("jar:" + getClass().getResource("/geojson").toString()), env);
 
-        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(paths, "*.json")) {
-            stream.forEach(path -> {
-                String regionName = path.getFileName().toString().split("_")[0].toLowerCase();
+
+        //final Path paths = Paths.get(RTreeIndex.class.getResource("/geojson").toURI());
+
+
+        getResources("geojson/").stream().forEach(resource -> {
+            try(final InputStream is = resource.openStream()) {
+                String[] pathSplit = resource.toString().split("/");
+                String regionName = pathSplit[pathSplit.length - 1].split("_")[0].toLowerCase();
                 GeometryJSON geometryJSON = new GeometryJSON(12);
                 try {
                     GeometryCollection g = (GeometryCollection) geometryJSON
-                            .read(new FileInputStream(path.toFile()));
+                            .read(is);
                     MultiPolygon mp = (MultiPolygon) g.getGeometryN(0);
                     //Polygon p = (Polygon) g.getGeometryN(0).getGeometryN(0);
                     PointOnGeometryLocator areaLocator = new IndexedPointInAreaLocator(mp);
@@ -66,7 +84,40 @@ public class RTreeIndex implements Serializable {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            });
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+
+
+
+//        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(paths, "*.json")) {
+//            stream.forEach(path -> {
+//                String regionName = path.getFileName().toString().split("_")[0].toLowerCase();
+//                GeometryJSON geometryJSON = new GeometryJSON(12);
+//                try {
+//                    GeometryCollection g = (GeometryCollection) geometryJSON
+//                            .read(new FileInputStream(path.toFile()));
+//                    MultiPolygon mp = (MultiPolygon) g.getGeometryN(0);
+//                    //Polygon p = (Polygon) g.getGeometryN(0).getGeometryN(0);
+//                    PointOnGeometryLocator areaLocator = new IndexedPointInAreaLocator(mp);
+//                    polygonIndexMap.put(regionHTMIndex.getCityMap().get(regionName), areaLocator);
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            });
+//        }
+    }
+
+    public static List<URL> getResources(final String path) throws IOException {
+        final ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        try (
+                final InputStream is = loader.getResourceAsStream(path);
+                final InputStreamReader isr = new InputStreamReader(is, StandardCharsets.UTF_8);
+                final BufferedReader br = new BufferedReader(isr)) {
+            return br.lines()
+                    .map(l -> loader.getResource(path  + l))
+                    .collect(Collectors.toList());
         }
     }
 
@@ -84,7 +135,7 @@ public class RTreeIndex implements Serializable {
     }
 
     //Test
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         String regionFile = "regionsHTM.json";
         final RegionHTMIndex regionHTMIndex = new RegionHTMIndex(regionFile);
         final RTreeIndex rTreeIndex = new RTreeIndex(regionHTMIndex);
@@ -93,7 +144,7 @@ public class RTreeIndex implements Serializable {
         trialSet.add(1);
 
         Optional<Integer> result =
-                rTreeIndex.getResidingRegionId(trialSet, new Coordinate(29.41804, 40.89778));
+                rTreeIndex.getResidingRegionId(trialSet, new Coordinate(29.061475, 41.049022));
 
         if(result.isPresent()) {
             System.out.println(result.get());
