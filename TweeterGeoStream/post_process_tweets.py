@@ -2,6 +2,14 @@ import os  # for manipulates files and subdirectories
 import json  # handle json files
 import geocoder
 
+tr_intab = 'ıIÇçşŞĞğÜüÖö'
+tr_outtab = 'iiccssgguuoo'
+tr_trans = str.maketrans(tr_intab, tr_outtab)
+
+
+def convert_char(word):
+    return word.translate(tr_trans)
+
 
 def process_geolocation_files(json_input_folder, json_output_folder):
     # In order to get the list of all files that ends with ".json"
@@ -19,8 +27,7 @@ def process_geolocation_files(json_input_folder, json_output_folder):
                 json_line = json.loads(line)
                 coordinates = [str(coordinate) for coordinate in json_line["coordinates"]]
                 reverse_geocode = geocoder.get_reverse_geocode_json(coordinates[0], coordinates[1])
-                # print(reverse_geocode)
-                if str(reverse_geocode).lower().find(json_file_region) >= 0:
+                if convert_char(str(reverse_geocode)).lower().find(json_file_region) >= 0:
                     json_data += str(json_line) + '\n'
                     # json_data.append(json_line)
                 else:
@@ -32,7 +39,7 @@ def process_geolocation_files(json_input_folder, json_output_folder):
             f.write(json_data)
 
 
-input_folder = os.path.join("data/temp/")
+input_folder = os.path.join("data/temp")
 output_folder = os.path.join("data/processed")
 
 process_geolocation_files(input_folder, output_folder)
