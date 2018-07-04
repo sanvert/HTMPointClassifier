@@ -27,12 +27,12 @@ public class MessageSender {
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
         properties.put(ProducerConfig.RETRIES_CONFIG, 0);
-        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //1: gzip, 2: snappy
+        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //1: GZIP, 2: snappy
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1024));
 
         //Parameters for previous versions
         properties.put("metadata.broker.list", kafkaBrokerList);
-        properties.put("compression.codec", "2"); //1: GZIP, 2:Snappy
+        properties.put("compression.codec", "2"); //1: GZIP, 2:snappy
         properties.put("request.required.acks", "0");
         //properties.put("serializer.class", StringEncoder.class.getName());
         properties.put("batch.num.messages", String.valueOf(batchSize));

@@ -38,7 +38,7 @@ def get_reverse_geocode_json(lat, lon):
         print(http_error)
         return []
     finally:
-        time.sleep(0.9)
+        time.sleep(0.81)
 
 
 # data = get_geocode_json('izmir')

@@ -13,8 +13,6 @@ consumer_secret = secret_params.consumer_secret
 access_token = secret_params.access_token
 access_token_secret = secret_params.access_token_secret
 
-stream_group = 2
-
 # Generated with http://boundingbox.klokantech.com/
 GEOBOX_ISTANBUL = [28.146472, 40.736531, 29.316821, 41.583175,
                    29.316821, 40.948929, 29.498401, 41.407169,
@@ -117,6 +115,9 @@ class LocationTweetListener(tweepy.StreamListener):
             return geo['coordinates']
         else:
             return mean(geo['coordinates'][0], axis=0)
+
+
+stream_group = 2
 
 
 if stream_group == 2:
