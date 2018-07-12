@@ -9,7 +9,7 @@ public class MessageSenderFactory {
     //Topic to MessageSender mapper.
     private static final Map<String, MessageSender> MESSAGE_SENDER_MAP = new ConcurrentHashMap<>();
     private static final Object LOCK = new Object();
-    private static final int KAFKA_CLIENT_BATCH_SIZE = 50; //KB
+    private static final int KAFKA_CLIENT_BATCH_SIZE = 1024; //KB
 
     public static final String KAFKA_CONSUMER_TOPICS_PREFIX = "c-";
 

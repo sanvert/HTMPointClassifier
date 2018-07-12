@@ -10,6 +10,7 @@ import edu.kafka.producer.MessageSenderFactory;
 import edu.kafka.producer.MultiMessageProducer;
 import edu.kafka.producer.RegionBox;
 import edu.kafka.producer.parallelized.MessageProducerRecursiveAction;
+import edu.util.ArgumentUtils;
 import edu.util.PropertyMapper;
 
 import java.util.concurrent.ForkJoinPool;
@@ -27,39 +28,34 @@ public class Query {
         this.consumerTopic = consumerTopic;
     }
 
-    public long sendMultiMessageQuery(String zookeeperHosts) {
-        int streamLength = 500000;
-        int multiCount = 40;
-        int batchSize = 40;
-
+    public long sendMultiMessageQuery(String zookeeperHosts, QueryParams params) {
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion(), multiCount);
+                = new MultiRandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion(),
+                                                    params.getMultiCount());
 
-        MessageProducer mp = new MultiMessageProducer(producerTopic, zookeeperHosts, generator, streamLength,
-                multiCount, batchSize);
+        MessageProducer mp = new MultiMessageProducer(producerTopic, zookeeperHosts, generator, params.getStreamLength(),
+                params.getMultiCount(), params.getBatchSize());
         mp.startSendingWithKey();
         return System.currentTimeMillis();
     }
 
-    public void sendMessagesMultiThreaded(String zookeeperHosts) {
+    public long sendMessagesMultiThreaded(String zookeeperHosts, QueryParams params) {
         StreamGenerator<Pair> generator = new RandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion());
 
         ForkJoinPool forkJoinPool = ForkJoinPool.commonPool();
 
         RecursiveAction recursiveAction = new MessageProducerRecursiveAction(producerTopic, zookeeperHosts,
-                generator, 1000000, 10000, 100);
+                generator, params.getStreamLength(), params.getMultiCount(), params.getBatchSize());
 
         forkJoinPool.invoke(recursiveAction);
+        return System.currentTimeMillis();
     }
 
-    public long sendSingleMessageQuery(String topic, String zookeeperHosts) {
-        int streamLength = 1000;
-        int batchSize = 50;
-
+    public long sendSingleMessageQuery(String zookeeperHosts, QueryParams params) {
         StreamGenerator<Pair> generator
                 = new RandomCoordinateGenerator(1.0, getBBAroundIstanbulRegion());
         MessageProducer producer = new MessageProducer(producerTopic,
-                zookeeperHosts, generator, streamLength, batchSize);
+                zookeeperHosts, generator, params.getStreamLength(), params.getBatchSize());
 
         producer.startSendingWithKey();
         return System.currentTimeMillis();
@@ -68,6 +64,9 @@ public class Query {
     public void receiveResultsAsync(String zookeeperHosts) {
         Runnable messageConsumer = new MessageConsumer(consumerTopic, zookeeperHosts);
         new Thread(messageConsumer).start();
+
+        Runnable messageConsumer2 = new MessageConsumer(consumerTopic, zookeeperHosts);
+        new Thread(messageConsumer2).start();
     }
 
     private static RegionBox getBBAroundIstanbulRegion() {
@@ -86,8 +85,14 @@ public class Query {
         String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
         String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
         Query q = new Query(producerTopic, consumerTopic);
-        long startTime = q.sendMultiMessageQuery(zookeeperHosts);
-        System.out.println(startTime);
         q.receiveResultsAsync(zookeeperHosts);
+
+        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 0, "1000000"));
+        int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 1, "25000"));
+        int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "2048"));
+        QueryParams params = new QueryParams(streamLength, multiCount, batchSize);
+        long startTime = q.sendMultiMessageQuery(zookeeperHosts, params);
+
+        System.out.println("QUERY SENT - " + startTime + "L");
     }
 }

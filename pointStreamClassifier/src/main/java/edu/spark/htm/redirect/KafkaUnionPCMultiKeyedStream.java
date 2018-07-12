@@ -98,8 +98,10 @@ public class KafkaUnionPCMultiKeyedStream {
 
         final int htmDepth = 20;
 
+        System.out.println("INDEX GENERATION STARTED, time" + System.currentTimeMillis());
         RegionHTMIndex regionHTMIndex = new RegionHTMIndex(REGIONS_JSON);
         RTreeIndex rTreeIndex = new RTreeIndex(regionHTMIndex);
+        System.out.println("INDEX GENERATION COMPLETED, time" + System.currentTimeMillis());
 
         try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 

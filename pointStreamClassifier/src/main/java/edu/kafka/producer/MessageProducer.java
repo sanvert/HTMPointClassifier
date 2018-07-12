@@ -52,15 +52,15 @@ public class MessageProducer {
 
         properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //gzip, snappy, lz4
         properties.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1024));
+        properties.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
 
         //Parameters for previous versions
         properties.put("request.required.acks", "0");
-        properties.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
-        properties.put("compression.codec", "2"); //1: GZIP, 2:Snappy
+        properties.put("compression.codec", "2"); //1: gzip, 2:snappy
         properties.put("producer.type", "async");
         properties.put("batch.num.messages", String.valueOf(batchSize));
-        properties.put("queue.buffering.max.ms", "5000");
-        properties.put("queue.buffering.max.messages", "10000");
+//        properties.put("queue.buffering.max.ms", "5000");
+//        properties.put("queue.buffering.max.messages", "10000");
 
         this.producerConfig = new kafka.producer.ProducerConfig(properties);
         this.streamGenerator = streamGenerator;

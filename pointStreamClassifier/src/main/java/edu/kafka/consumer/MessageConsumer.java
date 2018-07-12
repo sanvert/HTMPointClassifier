@@ -59,7 +59,7 @@ public class MessageConsumer implements Runnable {
                     System.out.println("Num of received recs: " + consumerRecords.count());
                 }
                 if(!consumerRecords.isEmpty()) {
-                    System.out.println(System.currentTimeMillis());
+                    System.out.println(System.currentTimeMillis() + "L");
                 }
                 messageConsumer.commitAsync();
             } catch (Exception e) {

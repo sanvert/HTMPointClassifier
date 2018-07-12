@@ -10,21 +10,12 @@ import com.vividsolutions.jts.geom.MultiPolygon;
 import org.geotools.geojson.geom.GeometryJSON;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -46,8 +37,6 @@ public class RTreeIndex implements Serializable {
             create();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
         }
     }
 
@@ -58,16 +47,7 @@ public class RTreeIndex implements Serializable {
 //        tree = FacetSequenceTreeBuilder.build(g);
     }
 
-    private void create() throws IOException, URISyntaxException {
-
-//        final Map<String, String> env = new HashMap<>();
-//        env.put( "create", "true" );
-//        final FileSystem fs = FileSystems
-//                .newFileSystem(URI.create("jar:" + getClass().getResource("/geojson").toString()), env);
-
-
-        //final Path paths = Paths.get(RTreeIndex.class.getResource("/geojson").toURI());
-
+    private void create() throws IOException {
 
         getResources("geojson/").stream().forEach(resource -> {
             try(final InputStream is = resource.openStream()) {
@@ -89,7 +69,13 @@ public class RTreeIndex implements Serializable {
             }
         });
 
+//        final Map<String, String> env = new HashMap<>();
+//        env.put( "create", "true" );
+//        final FileSystem fs = FileSystems
+//                .newFileSystem(URI.create("jar:" + getClass().getResource("/geojson").toString()), env);
 
+
+        //final Path paths = Paths.get(RTreeIndex.class.getResource("/geojson").toURI());
 
 //        try (final DirectoryStream<Path> stream = Files.newDirectoryStream(paths, "*.json")) {
 //            stream.forEach(path -> {
