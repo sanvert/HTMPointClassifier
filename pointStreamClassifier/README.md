@@ -5,13 +5,12 @@ sudo /opt/spark/spark-2.3.0-bin-hadoop2.7/bin/spark-submit --class edu.spark.htm
 
 -Producer topic
 sudo /opt/kafka/kafka_2.11-1.1.0/bin/kafka-topics.sh --create --zookeeper localhost:2181 --replication-factor 2 --partitions 9 --topic p-1
--Consumer topic
-sudo /opt/kafka_2.11-1.1.0/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic c-1 
 -Alter retention time of topic
-
 sudo /opt/kafka_2.11-1.1.0/bin/kafka-configs.sh \
   --zookeeper localhost:2181 \
   --alter \
   --entity-type topics \
   --entity-name p-1 \
   --add-config retention.ms=5000
+-Consumer topic
+sudo /opt/kafka_2.11-1.1.0/bin/kafka-topics.sh --describe --zookeeper localhost:2181 --topic c-1 

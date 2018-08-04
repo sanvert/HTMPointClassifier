@@ -1,8 +1,7 @@
 package edu.kafka.consumer;
 
-import edu.kafka.producer.MessageSenderFactory;
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
-import edu.util.PropertyMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
@@ -10,18 +9,25 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.AsynchronousFileChannel;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MessageConsumer implements Runnable {
 
     private static final boolean DEBUG = false;
     private static final int POLL_TIMEOUT_MSEC = 1000;
+    private static final AtomicLong CHANNEL_SIZE = new AtomicLong(0);
 
     private final Properties properties;
     private final Consumer<Integer, String> messageConsumer;
+    private final AsynchronousFileChannel asynchronousFileChannel;
 
-    public MessageConsumer(final String topic, final String groupId) {
+    public MessageConsumer(final AsynchronousFileChannel fileChannel,
+                           final String topic, final String groupId) {
         this.properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString());
@@ -33,6 +39,7 @@ public class MessageConsumer implements Runnable {
         messageConsumer = new KafkaConsumer<>(properties);
         // Subscribe to the topic.
         messageConsumer.subscribe(Collections.singletonList(topic));
+        this.asynchronousFileChannel = fileChannel;
     }
 
     public void run() {
@@ -49,15 +56,26 @@ public class MessageConsumer implements Runnable {
                     if (noRecordsCount > giveUp) break;
                     else continue;
                 }
-                if (DEBUG) {
-                    consumerRecords.forEach(record -> {
+
+                consumerRecords.forEach(record -> {
+                    if(DEBUG) {
                         System.out.printf("Consumer Record:(%d, %s, %d, %d)\n",
                                 record.key(), record.value(),
                                 record.partition(), record.offset());
-                    });
-                } else {
-                    System.out.println("Num of received recs: " + consumerRecords.count());
-                }
+                    }
+                    StringBuilder sb = new StringBuilder(record.value().length())
+                            .append(record.key())
+                            .append(":")
+                            .append(record.value())
+                            .append(StringUtils.LF);
+
+                    byte[] toWrite = sb.toString().getBytes();
+                    long currentPoisiton = CHANNEL_SIZE.getAndAdd(toWrite.length);
+                    asynchronousFileChannel.write(ByteBuffer.wrap(toWrite), currentPoisiton);
+
+                });
+                System.out.println("Num of received recs: " + consumerRecords.count());
+
                 if(!consumerRecords.isEmpty()) {
                     System.out.println(System.currentTimeMillis() + "L");
                 }
@@ -70,11 +88,10 @@ public class MessageConsumer implements Runnable {
 
         messageConsumer.close();
         System.out.println("DONE");
-    }
-
-    public static void main(String[] args) {
-        Runnable messageConsumer = new MessageConsumer(MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + "1",
-                PropertyMapper.readDefaultProps().get("kafka.group.id"));
-        new Thread(messageConsumer).start();
+        try {
+            asynchronousFileChannel.force(false);
+        } catch (IOException e) {
+            System.out.println("CHANNEL ERROR:" + e);
+        }
     }
 }

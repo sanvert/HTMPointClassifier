@@ -1,9 +1,9 @@
 package edu.kafka;
 
 public class QueryParams {
-    private int streamLength = 1000000;
-    private int multiCount = 10000;
-    private int batchSize = 50;
+    private int streamLength;
+    private int multiCount;
+    private int batchSize;
 
     public QueryParams(final int streamLength, final int multiCount, final int batchSize) {
         this.streamLength = streamLength;
