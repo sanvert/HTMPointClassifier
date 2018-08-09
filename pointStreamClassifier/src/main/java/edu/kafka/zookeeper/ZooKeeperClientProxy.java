@@ -58,7 +58,7 @@ public class ZooKeeperClientProxy {
                 .collect(joining(","));
     }
 
-    //Testing purpose only
+    //Testing purpose
     public static void main(String[] args) {
         String zookeeperHosts = PropertyMapper.readDefaultProps().get("zookeeper.host.list");
         System.out.println(zookeeperHosts);

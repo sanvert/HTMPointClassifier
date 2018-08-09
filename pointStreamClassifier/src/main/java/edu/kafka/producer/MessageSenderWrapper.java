@@ -1,8 +1,9 @@
 package edu.kafka.producer;
 
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
+import edu.util.PropertyMapper;
 
-// Bill Pugh style singleton.
+// Bill Pugh style singleton. Replaced with another instance.
 public class MessageSenderWrapper {
     private MessageSenderWrapper() {
         // private constructor
@@ -10,17 +11,20 @@ public class MessageSenderWrapper {
 
     // static inner class - inner classes are not loaded until they are
     // referenced.
+    // used by threads working in Spark to response
     private static class MessageSenderHolder {
         private static final String KAFKA_CONSUMER_TOPICS_PREFIX = "c-";
-        private static final int KAFKA_CLIENT_BATCH_SIZE = 50; //KB
+        //50 total
+        private static final int KAFKA_BATCH_SIZE = 1024; //KB
 
         private static MessageSender messageSender
                 = new MessageSender(ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString(),
-                            ZookeeperClientProxyWrapper.getInstance().getKafkaTopics().stream()
-                                .filter(t -> t.startsWith(KAFKA_CONSUMER_TOPICS_PREFIX))
-                                .findFirst().orElse(KAFKA_CONSUMER_TOPICS_PREFIX),
-                            KAFKA_CLIENT_BATCH_SIZE
-                            );
+                        ZookeeperClientProxyWrapper.getInstance().getKafkaTopics().stream()
+                            .filter(t -> t.startsWith(KAFKA_CONSUMER_TOPICS_PREFIX))
+                            .findFirst().orElse(KAFKA_CONSUMER_TOPICS_PREFIX),
+                KAFKA_BATCH_SIZE
+                        * Integer.parseInt(PropertyMapper.readDefaultProps().get("kafka.batch.size"))
+        );
     }
 
     public static MessageSender getInstance() {

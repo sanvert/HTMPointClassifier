@@ -1,5 +1,6 @@
 package edu.kafka.consumer;
 
+import edu.kafka.zookeeper.CustomZookeeperClientProxyProvider;
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -26,11 +27,11 @@ public class MessageConsumer implements Runnable {
     private final Consumer<Integer, String> messageConsumer;
     private final AsynchronousFileChannel asynchronousFileChannel;
 
-    public MessageConsumer(final AsynchronousFileChannel fileChannel,
+    public MessageConsumer(final AsynchronousFileChannel fileChannel, final String zookeeperHosts,
                            final String topic, final String groupId) {
         this.properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-                ZookeeperClientProxyWrapper.getInstance().getKafkaBrokerListAsString());
+                CustomZookeeperClientProxyProvider.getInstance(zookeeperHosts).getKafkaBrokerListAsString());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
@@ -43,7 +44,7 @@ public class MessageConsumer implements Runnable {
     }
 
     public void run() {
-        final int giveUp = 11;
+        final int giveUpCount = 11;
         int noRecordsCount = 0;
         System.out.println("STARTED");
 
@@ -53,7 +54,7 @@ public class MessageConsumer implements Runnable {
                         messageConsumer.poll(POLL_TIMEOUT_MSEC);
                 if (consumerRecords.count() == 0) {
                     noRecordsCount++;
-                    if (noRecordsCount > giveUp) break;
+                    if (noRecordsCount > giveUpCount) break;
                     else continue;
                 }
 
@@ -70,8 +71,8 @@ public class MessageConsumer implements Runnable {
                             .append(StringUtils.LF);
 
                     byte[] toWrite = sb.toString().getBytes();
-                    long currentPoisiton = CHANNEL_SIZE.getAndAdd(toWrite.length);
-                    asynchronousFileChannel.write(ByteBuffer.wrap(toWrite), currentPoisiton);
+                    long currentPosition = CHANNEL_SIZE.getAndAdd(toWrite.length);
+                    asynchronousFileChannel.write(ByteBuffer.wrap(toWrite), currentPosition);
 
                 });
                 System.out.println("Num of received recs: " + consumerRecords.count());

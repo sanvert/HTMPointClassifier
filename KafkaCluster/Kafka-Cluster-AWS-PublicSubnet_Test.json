@@ -380,7 +380,7 @@
         "Tags":[
           {
             "Key":"Name",
-            "Value":"KafkaBrokerInPublicSubnets",
+            "Value":"KafkaBrokerInPublicSubnets"
           }
         ],
         "UserData": {
@@ -416,6 +416,7 @@
                   ]
                 },
                 ":2181/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
+                "sed -i.bak \"s/#advertised.listeners=.*/advertised.listeners=PLAINTEXT:\\/\\/`curl http:\\/\\/169.254.169.254/latest/meta-data/public-hostname`:9092/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
                 "sed -i.bak \"s/broker.id=.*/broker.id=0/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
                 "sed -i 's/Defaults    requiretty/Defaults    !requiretty/g' /etc/sudoers\n",
                 "sed -i 's/KAFKA_JMX_OPTS=\"-D/KAFKA_JMX_OPTS=\"-Djava.net.preferIPv4Stack=true -D/g' /app/kafka/kafka_2.11-1.1.0/bin/kafka-run-class.sh\n",
@@ -494,7 +495,7 @@
         "Tags":[
           {
             "Key":"Name",
-            "Value":"KafkaBroker2InPublicSubnets",
+            "Value":"KafkaBroker2InPublicSubnets"
           }
         ],
         "UserData": {
@@ -530,6 +531,7 @@
                   ]
                 },
                 ":2181/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
+                "sed -i.bak \"s/#advertised.listeners=.*/advertised.listeners=PLAINTEXT:\\/\\/`curl http:\\/\\/169.254.169.254/latest/meta-data/public-hostname`:9092/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
                 "sed -i.bak \"s/broker.id=.*/broker.id=1/g\" /app/kafka/kafka_2.11-1.1.0/config/server.properties\n",
                 "sed -i 's/Defaults    requiretty/Defaults    !requiretty/g' /etc/sudoers\n",
                 "sed -i 's/KAFKA_JMX_OPTS=\"-D/KAFKA_JMX_OPTS=\"-Djava.net.preferIPv4Stack=true -D/g' /app/kafka/kafka_2.11-1.1.0/bin/kafka-run-class.sh\n",

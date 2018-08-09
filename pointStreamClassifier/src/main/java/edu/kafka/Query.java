@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.RecursiveAction;
+import java.util.stream.IntStream;
 
 public class Query {
 
@@ -51,7 +52,7 @@ public class Query {
 
     public long sendMultiMessageQuery(String zookeeperHosts, QueryParams params) {
         StreamGenerator<Pair> generator
-                = new MultiRandomCoordinateGenerator(0.9, getBBAroundIstanbulRegion(),
+                = new MultiRandomCoordinateGenerator(0.95, getBBAroundIstanbulRegion(),
                                                     params.getMultiCount());
 
         MessageProducer mp = new MultiMessageProducer(producerTopic, zookeeperHosts, generator, params.getStreamLength(),
@@ -84,18 +85,15 @@ public class Query {
         return System.currentTimeMillis();
     }
 
-    public void receiveResultsAsync(String zookeeperHosts) {
-        Runnable messageConsumer = new MessageConsumer(asynchronousFileChannel,
-                consumerTopic, zookeeperHosts);
-        new Thread(messageConsumer).start();
+    public void receiveResultsAsync(final String zookeeperHosts, final int consumerCount) {
+        final String groupId = "01";
 
-        Runnable messageConsumer2 = new MessageConsumer(asynchronousFileChannel,
-                consumerTopic, zookeeperHosts);
-        new Thread(messageConsumer2).start();
+        IntStream.range(0, consumerCount).forEach(idx -> {
+            Runnable messageConsumer = new MessageConsumer(asynchronousFileChannel, zookeeperHosts,
+                    consumerTopic, groupId);
+            new Thread(messageConsumer).start();
 
-        Runnable messageConsumer3 = new MessageConsumer(asynchronousFileChannel,
-                consumerTopic, zookeeperHosts);
-        new Thread(messageConsumer3).start();
+        });
     }
 
     private static RegionBox getBBAroundIstanbulRegion() {
@@ -109,17 +107,18 @@ public class Query {
     }
 
     public static void main(String[] args) {
-        String zookeeperHosts = ArgumentUtils.readCLIArgumentSilently(args, 0,
+        String zookeeperHosts = ArgumentUtils.readArgumentSilently(args, 0,
                 PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
+        System.out.println(zookeeperHosts);
         String clientId = "1";
         String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
         String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
         Query q = new Query(producerTopic, consumerTopic);
-        q.receiveResultsAsync(zookeeperHosts);
+        q.receiveResultsAsync(zookeeperHosts, 3);
 
-        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 0, "10000000"));
-        int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 1, "25000"));
-        int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "2048"));
+        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 1, "25000"));
+        int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "25000"));
+        int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 3, "2048"));
         QueryParams params = new QueryParams(streamLength, multiCount, batchSize);
         System.out.println("START - " + System.currentTimeMillis() + "L");
         long queryCompletionTime = q.sendMultiMessageQuery(zookeeperHosts, params);

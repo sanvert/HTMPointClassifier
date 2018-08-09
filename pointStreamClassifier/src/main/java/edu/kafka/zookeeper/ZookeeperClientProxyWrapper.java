@@ -9,12 +9,12 @@ public class ZookeeperClientProxyWrapper {
     }
 
     private static class ZookeeperClientProxyHolder {
-        private static ZooKeeperClientProxy zooKeeperClientProxy
+        private static ZooKeeperClientProxy ZOOKEEPER_CLIENT_PROXY
                 = new ZooKeeperClientProxy(PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
     }
 
     public static ZooKeeperClientProxy getInstance() {
-        return ZookeeperClientProxyHolder.zooKeeperClientProxy;
+        return ZookeeperClientProxyHolder.ZOOKEEPER_CLIENT_PROXY;
     }
 
 }

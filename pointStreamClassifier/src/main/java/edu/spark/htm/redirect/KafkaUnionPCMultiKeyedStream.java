@@ -47,7 +47,7 @@ import java.util.stream.Collectors;
 public class KafkaUnionPCMultiKeyedStream {
     private static final Logger LOGGER = LogManager.getRootLogger();
     private static final Level LOG_LEVEL = Level.WARN;
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
     private static final Duration BATCH_DURATION
             = Durations.milliseconds(Long.valueOf(PropertyMapper.readDefaultProps().get("spark.kafka.direct.batch.duration")));
     private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.readDefaultProps().get("report.period"));
@@ -59,10 +59,10 @@ public class KafkaUnionPCMultiKeyedStream {
     public static void main(String[] args) throws InterruptedException {
         LOGGER.setLevel(LOG_LEVEL);
 
-        MASTER_ADDRESS = ArgumentUtils.readCLIArgumentSilently(args, 1,
-                PropertyMapper.readDefaultProps().get("spark.default.master.address"));
         final String zookeeperHosts = ArgumentUtils.readCLIArgumentSilently(args, 0,
                 PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
+        MASTER_ADDRESS = ArgumentUtils.readCLIArgumentSilently(args, 1,
+                PropertyMapper.readDefaultProps().get("spark.default.master.address"));
         final ZooKeeperClientProxy zooKeeperClientProxy = new ZooKeeperClientProxy(zookeeperHosts);
 
         int numOfStreams = Integer.parseInt(PropertyMapper.readDefaultProps().get("spark.stream.count"));
@@ -168,7 +168,8 @@ public class KafkaUnionPCMultiKeyedStream {
                             }
                         }
 
-                        MessageSenderFactory.getSender(topic.split("-")[1]).send(key, resultBuilder.toString());
+                        MessageSenderFactory.getSender(topic.split("-")[1], zookeeperHosts)
+                                .send(key, resultBuilder.toString());
 
                         return new Tuple2<>(key, resultBuilder.toString());
                     });

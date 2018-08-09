@@ -2,6 +2,7 @@ package edu.kafka.producer;
 
 import edu.generator.StreamGenerator;
 import edu.kafka.zookeeper.ZooKeeperClientProxy;
+import edu.util.PropertyMapper;
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Properties;
 
 public class MessageProducer {
+    private static final int KAFKA_BATCH_SIZE = 1024; //KB
 
     private final kafka.producer.ProducerConfig producerConfig;
     private final Properties properties;
@@ -42,6 +44,7 @@ public class MessageProducer {
             //properties.put("queue.buffering.max.messages", "10000");
         } else {
             properties.put(ProducerConfig.ACKS_CONFIG, "0");
+            System.out.println(zooKeeperClientProxy.getKafkaBrokerListAsString());
             properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, zooKeeperClientProxy.getKafkaBrokerListAsString());
             properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
             properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
@@ -50,13 +53,17 @@ public class MessageProducer {
             properties.put(ProducerConfig.RETRIES_CONFIG, 0);
         }
 
-        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG, "snappy"); //gzip, snappy, lz4
-        properties.put(ProducerConfig.BATCH_SIZE_CONFIG, String.valueOf(batchSize * 1024));
+        properties.put(ProducerConfig.COMPRESSION_TYPE_CONFIG,
+                PropertyMapper.readDefaultProps().get("kafka.compression.codec.name")); //gzip, snappy, lz4
+        properties.put(ProducerConfig.BATCH_SIZE_CONFIG,
+                String.valueOf(KAFKA_BATCH_SIZE *
+                        Integer.parseInt(PropertyMapper.readDefaultProps().get("kafka.batch.size"))));
         properties.put("metadata.broker.list", zooKeeperClientProxy.getKafkaBrokerListAsString());
 
         //Parameters for previous versions
         properties.put("request.required.acks", "0");
-        properties.put("compression.codec", "2"); //1: gzip, 2:snappy
+        properties.put("compression.codec",
+                PropertyMapper.readDefaultProps().get("kafka.compression.codec.id")); //1: gzip, 2:snappy
         properties.put("producer.type", "async");
         properties.put("batch.num.messages", String.valueOf(batchSize));
 //        properties.put("queue.buffering.max.ms", "5000");
