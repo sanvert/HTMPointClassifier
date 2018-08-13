@@ -1,0 +1,12 @@
+[
+  {
+    "Classification": "spark-defaults",
+    "Properties": {
+      "spark.yarn.executor.memoryOverhead": "1536",
+      "spark.yarn.driver.memoryOverhead": "1024",
+      "spark.driver.memory": "3g",
+      "spark.driver.cores": "2",
+      "spark.dynamicAllocation.enabled": "false"
+    }
+  }
+]

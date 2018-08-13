@@ -73,6 +73,11 @@
       "Default": "t2.micro",
       "AllowedValues": [
         "r3.large",
+        "r3.xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m5.large",
+        "m5.xlarge",
         "t2.nano",
         "t2.small",
         "t2.micro"
@@ -85,6 +90,11 @@
       "Default": "t2.small",
       "AllowedValues": [
         "r3.xlarge",
+        "m4.large",
+        "m4.xlarge",
+        "m4.2xlarge",
+        "m5.large",
+        "m5.xlarge",
         "t2.small"
       ],
       "ConstraintDescription": "must be a valid EC2 instance type."

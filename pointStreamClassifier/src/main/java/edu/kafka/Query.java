@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ForkJoinPool;
@@ -109,16 +108,19 @@ public class Query {
     public static void main(String[] args) {
         String zookeeperHosts = ArgumentUtils.readArgumentSilently(args, 0,
                 PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
+        String clientId = ArgumentUtils.readArgumentSilently(args, 1, "1");
+        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "25000"));
+        int consumerCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 3, "5"));
+        int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 4, "25000"));
+        int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 5, "2048"));
+
         System.out.println(zookeeperHosts);
-        String clientId = "1";
+
         String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
         String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
         Query q = new Query(producerTopic, consumerTopic);
-        q.receiveResultsAsync(zookeeperHosts, 3);
+        q.receiveResultsAsync(zookeeperHosts, consumerCount);
 
-        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 1, "25000"));
-        int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "25000"));
-        int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 3, "2048"));
         QueryParams params = new QueryParams(streamLength, multiCount, batchSize);
         System.out.println("START - " + System.currentTimeMillis() + "L");
         long queryCompletionTime = q.sendMultiMessageQuery(zookeeperHosts, params);
