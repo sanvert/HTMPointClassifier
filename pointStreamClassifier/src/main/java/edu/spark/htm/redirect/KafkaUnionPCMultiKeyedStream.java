@@ -112,6 +112,10 @@ public class KafkaUnionPCMultiKeyedStream {
             kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
             kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
+            //Against exception of org.apache.kafka.clients.consumer.OffsetOutOfRangeException:
+            //Offsets out of range with no configured reset policy for partitions
+            kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
+
             //Kafka topics to subscribe
             List<String> topics = allTopics.stream()
                     .filter(topic -> topic.startsWith(KAFKA_PRODUCER_TOPICS_PREFIX))

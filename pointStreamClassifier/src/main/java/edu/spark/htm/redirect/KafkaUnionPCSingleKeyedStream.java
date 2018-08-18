@@ -107,6 +107,9 @@ public class KafkaUnionPCSingleKeyedStream {
             kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
             kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
             kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+            //Against exception of org.apache.kafka.clients.consumer.OffsetOutOfRangeException:
+            //Offsets out of range with no configured reset policy for partitions
+            kafkaParams.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
             //Kafka topics to subscribe
             List<String> topics = allTopics.stream()

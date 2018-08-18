@@ -2,11 +2,13 @@
   {
     "Classification": "spark-defaults",
     "Properties": {
-      "spark.yarn.executor.memoryOverhead": "1536",
+      "spark.dynamicAllocation.enabled": "false",
+      "spark.yarn.executor.memoryOverhead": "1024",
       "spark.yarn.driver.memoryOverhead": "1024",
-      "spark.driver.memory": "3g",
+      "spark.driver.memory": "5g",
       "spark.driver.cores": "2",
-      "spark.dynamicAllocation.enabled": "false"
+      "spark.executor.memory": "12g",
+      "spark.executor.instances": "18"
     }
   }
 ]

@@ -1,7 +1,6 @@
 package edu.kafka.consumer;
 
 import edu.kafka.zookeeper.CustomZookeeperClientProxyProvider;
-import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -35,6 +34,7 @@ public class MessageConsumer implements Runnable {
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
         // Create the consumer using props.
         messageConsumer = new KafkaConsumer<>(properties);

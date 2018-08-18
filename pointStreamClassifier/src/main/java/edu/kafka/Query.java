@@ -96,7 +96,7 @@ public class Query {
     }
 
     private static RegionBox getBBAroundIstanbulRegion() {
-        //Arbitrary region to generate random coordinates - around Istanbul
+        //Arbitrary region to generate random coordinates - around Istanbul10M
         double minLatitude = 40.780000;
         double maxLatitude = 41.339800;
         double minLongitude = 28.507700;
@@ -109,7 +109,7 @@ public class Query {
         String zookeeperHosts = ArgumentUtils.readArgumentSilently(args, 0,
                 PropertyMapper.readDefaultProps().get("zookeeper.host.list"));
         String clientId = ArgumentUtils.readArgumentSilently(args, 1, "1");
-        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "25000"));
+        int streamLength = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 2, "5000000"));
         int consumerCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 3, "5"));
         int multiCount = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 4, "25000"));
         int batchSize = Integer.parseInt(ArgumentUtils.readArgumentSilently(args, 5, "2048"));
