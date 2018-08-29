@@ -1,0 +1,2 @@
+The package spherical contains implementation of HTM indexing method 
+of Szalay A S, Gray J, Fekete G, et al. Indexing the sphere with the hierarchical triangular mesh[J]. arXiv preprint cs/0701164, 2007
