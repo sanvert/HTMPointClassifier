@@ -5,7 +5,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.util.Properties;
@@ -17,14 +16,15 @@ public class MessageSender {
     private final Properties properties;
     private final String topic;
 
-    public MessageSender(final String kafkaBrokerList, final String topic, final int batchSize) {
+    public MessageSender(final String kafkaBrokerList, final String topic, final int batchSize,
+                         final String keySerializer) {
         this.topic = topic;
 
         this.properties = new Properties();
         properties.put(ProducerConfig.ACKS_CONFIG, "0");
         properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBrokerList);
         properties.put(ProducerConfig.BUFFER_MEMORY_CONFIG, 33554432);
-        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, IntegerSerializer.class.getName());
+        properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);//IntegerSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.LINGER_MS_CONFIG, 1);
         properties.put(ProducerConfig.RETRIES_CONFIG, 0);

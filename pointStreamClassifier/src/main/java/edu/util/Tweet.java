@@ -1,6 +1,5 @@
 package edu.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.gson.annotations.Expose;
 
 import java.util.List;

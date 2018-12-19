@@ -12,6 +12,8 @@ import edu.kafka.producer.RegionBox;
 import edu.kafka.producer.parallelized.MessageProducerRecursiveAction;
 import edu.util.ArgumentUtils;
 import edu.util.PropertyMapper;
+import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.io.IOException;
 import java.nio.channels.AsynchronousFileChannel;
@@ -84,19 +86,30 @@ public class Query {
         return System.currentTimeMillis();
     }
 
-    public void receiveResultsAsync(final String zookeeperHosts, final int consumerCount) {
+    public void receiveResultsAsyncWithIntKey(final String zookeeperHosts, final int consumerCount) {
         final String groupId = "01";
 
         IntStream.range(0, consumerCount).forEach(idx -> {
-            Runnable messageConsumer = new MessageConsumer(asynchronousFileChannel, zookeeperHosts,
-                    consumerTopic, groupId);
+            Runnable messageConsumer = new MessageConsumer<Integer>(asynchronousFileChannel, zookeeperHosts,
+                    consumerTopic, groupId, IntegerDeserializer.class.getName());
+            new Thread(messageConsumer).start();
+
+        });
+    }
+
+    public void receiveResultsAsyncWithStrKey(final String zookeeperHosts, final int consumerCount) {
+        final String groupId = "01";
+
+        IntStream.range(0, consumerCount).forEach(idx -> {
+            Runnable messageConsumer = new MessageConsumer<String>(asynchronousFileChannel, zookeeperHosts,
+                    consumerTopic, groupId, StringDeserializer.class.getName());
             new Thread(messageConsumer).start();
 
         });
     }
 
     private static RegionBox getBBAroundIstanbulRegion() {
-        //Arbitrary region to generate random coordinates - around Istanbul10M
+        //Arbitrary region to generate random coordinates - around Istanbul
         double minLatitude = 40.780000;
         double maxLatitude = 41.339800;
         double minLongitude = 28.507700;
@@ -119,7 +132,7 @@ public class Query {
         String producerTopic = KAFKA_PRODUCER_TOPICS_PREFIX + clientId;
         String consumerTopic = MessageSenderFactory.KAFKA_CONSUMER_TOPICS_PREFIX + clientId;
         Query q = new Query(producerTopic, consumerTopic);
-        q.receiveResultsAsync(zookeeperHosts, consumerCount);
+        q.receiveResultsAsyncWithIntKey(zookeeperHosts, consumerCount);
 
         QueryParams params = new QueryParams(streamLength, multiCount, batchSize);
         System.out.println("START - " + System.currentTimeMillis() + "L");

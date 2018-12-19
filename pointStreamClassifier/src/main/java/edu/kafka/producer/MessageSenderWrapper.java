@@ -2,6 +2,7 @@ package edu.kafka.producer;
 
 import edu.kafka.zookeeper.ZookeeperClientProxyWrapper;
 import edu.util.PropertyMapper;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 
 // Bill Pugh style singleton. Replaced with another instance.
 public class MessageSenderWrapper {
@@ -22,8 +23,8 @@ public class MessageSenderWrapper {
                         ZookeeperClientProxyWrapper.getInstance().getKafkaTopics().stream()
                             .filter(t -> t.startsWith(KAFKA_CONSUMER_TOPICS_PREFIX))
                             .findFirst().orElse(KAFKA_CONSUMER_TOPICS_PREFIX),
-                KAFKA_BATCH_SIZE
-                        * Integer.parseInt(PropertyMapper.readDefaultProps().get("kafka.batch.size"))
+                KAFKA_BATCH_SIZE * Integer.parseInt(PropertyMapper.readDefaultProps().get("kafka.batch.size")),
+                        IntegerSerializer.class.getName()
         );
     }
 

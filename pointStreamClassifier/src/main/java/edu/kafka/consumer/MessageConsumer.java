@@ -6,7 +6,6 @@ import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 
 import java.io.IOException;
@@ -16,23 +15,23 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MessageConsumer implements Runnable {
+public class MessageConsumer<K> implements Runnable {
 
     private static final boolean DEBUG = false;
     private static final int POLL_TIMEOUT_MSEC = 1000;
     private static final AtomicLong CHANNEL_SIZE = new AtomicLong(0);
 
     private final Properties properties;
-    private final Consumer<Integer, String> messageConsumer;
+    private final Consumer<K, String> messageConsumer;
     private final AsynchronousFileChannel asynchronousFileChannel;
 
     public MessageConsumer(final AsynchronousFileChannel fileChannel, final String zookeeperHosts,
-                           final String topic, final String groupId) {
+                           final String topic, final String groupId, final String deserializerName) {
         this.properties = new Properties();
         properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
                 CustomZookeeperClientProxyProvider.getInstance(zookeeperHosts).getKafkaBrokerListAsString());
         properties.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, deserializerName);
         properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 
@@ -50,7 +49,7 @@ public class MessageConsumer implements Runnable {
 
         while (true) {
             try {
-                final ConsumerRecords<Integer, String> consumerRecords =
+                final ConsumerRecords<K, String> consumerRecords =
                         messageConsumer.poll(POLL_TIMEOUT_MSEC);
                 if (consumerRecords.count() == 0) {
                     noRecordsCount++;

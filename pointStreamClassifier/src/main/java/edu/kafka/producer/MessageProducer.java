@@ -98,7 +98,7 @@ public class MessageProducer {
             List<KeyedMessage> batchList = new ArrayList<>();
             int currentBatchCount = batchSize;
             while(currentBatchCount > 0 && counter - batchList.size() > 0) {
-                batchList.add( new KeyedMessage(topicToSend, streamGenerator.generateString()));
+                batchList.add(new KeyedMessage(topicToSend, streamGenerator.generateString()));
                 currentBatchCount--;
             }
             producer.send(batchList);

@@ -15,6 +15,7 @@ public class RandomCoordinatePairGenerator implements StreamGenerator<Pair> {
 
     public RandomCoordinatePairGenerator(RegionBox regionBox) {
         this.regionBox = regionBox;
+        this.probability = 1.0;
     }
 
     public RandomCoordinatePairGenerator(double probability, RegionBox regionBox) {
@@ -53,6 +54,18 @@ public class RandomCoordinatePairGenerator implements StreamGenerator<Pair> {
         }
 
         return new Pair(longitude, latitude);
+    }
+
+    protected String randCoordinatesConcatenated() {
+        Double latitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLatitude(), regionBox.getMaxLatitude());
+        Double longitude = ThreadLocalRandom.current().nextDouble(regionBox.getMinLongitude(), regionBox.getMaxLongitude());
+
+        if(this.rand.nextDouble() > probability) {
+            latitude += latitudeWindow;
+            longitude += longitudeWindow;
+        }
+
+        return latitude.toString() +  ";" + longitude.toString();
     }
 
     @Override

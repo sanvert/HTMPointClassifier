@@ -9,6 +9,6 @@ public class RandomCoordinateGenerator extends RandomCoordinatePairGenerator {
 
     @Override
     public String generateString() {
-        return randLatitude().toString() + ";" + randLongitude().toString();
+        return randCoordinatesConcatenated();
     }
 }

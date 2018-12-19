@@ -12,6 +12,7 @@ import edu.util.RegionHTMIndex;
 import org.apache.commons.lang.StringUtils;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
+import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -103,13 +104,16 @@ public class KafkaUnionPCMultiKeyedStream {
         RTreeIndex rTreeIndex = new RTreeIndex(regionHTMIndex);
         System.out.println("INDEX GENERATION COMPLETED, time" + System.currentTimeMillis());
 
+        final String keySerializer = IntegerSerializer.class.getName();
+        final String keyDeserializer = IntegerDeserializer.class.getName();
+
         try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 
             //Kafka consumer params
             Map<String, Object> kafkaParams = new HashMap<>();
             kafkaParams.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, zooKeeperClientProxy.getKafkaBrokerListAsString());
             kafkaParams.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
-            kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, IntegerDeserializer.class.getName());
+            kafkaParams.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, keyDeserializer);
             kafkaParams.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
 
             //Against exception of org.apache.kafka.clients.consumer.OffsetOutOfRangeException:
@@ -172,7 +176,7 @@ public class KafkaUnionPCMultiKeyedStream {
                             }
                         }
 
-                        MessageSenderFactory.getSender(topic.split("-")[1], zookeeperHosts)
+                        MessageSenderFactory.getSender(topic.split("-")[1], zookeeperHosts, keySerializer)
                                 .send(key, resultBuilder.toString());
 
                         return new Tuple2<>(key, resultBuilder.toString());
