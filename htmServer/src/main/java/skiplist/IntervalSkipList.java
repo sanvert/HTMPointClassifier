@@ -273,9 +273,10 @@ public class IntervalSkipList implements SkipList {
     }
 
     /**
-     * Randomly returns a height.  Height 1 is returned with probability 1/2;
-     * 2 with probability 1/4, ...
-     *
+     * Randomly returns a height.
+     * 1 is returned with probability 1/2,
+     * 2 with probability 1/4,
+     * 3 with p of 1/8
      * @return a randomly chosen height
      */
     private int chooseHeight() {

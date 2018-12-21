@@ -14,6 +14,7 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.IntegerDeserializer;
 import org.apache.kafka.common.serialization.IntegerSerializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
@@ -52,6 +53,7 @@ public class KafkaUnionPCMultiKeyedStream {
     private static final Duration BATCH_DURATION
             = Durations.milliseconds(Long.valueOf(PropertyMapper.readDefaultProps().get("spark.kafka.direct.batch.duration")));
     private static final long REPORT_PERIOD = Long.valueOf(PropertyMapper.readDefaultProps().get("report.period"));
+    private static final int KAFKA_MESSAGE_KEY_TYPE = Integer.valueOf(PropertyMapper.readDefaultProps().get("kafka.key.type"));
     private static final String KAFKA_PRODUCER_TOPICS_PREFIX = "p-";
     private static final String REGIONS_JSON ="regionsHTM.json";
 
@@ -104,8 +106,10 @@ public class KafkaUnionPCMultiKeyedStream {
         RTreeIndex rTreeIndex = new RTreeIndex(regionHTMIndex);
         System.out.println("INDEX GENERATION COMPLETED, time" + System.currentTimeMillis());
 
-        final String keySerializer = IntegerSerializer.class.getName();
-        final String keyDeserializer = IntegerDeserializer.class.getName();
+        final String keySerializer = KAFKA_MESSAGE_KEY_TYPE == 0
+                ? IntegerSerializer.class.getName() : StringSerializer.class.getName();
+        final String keyDeserializer = KAFKA_MESSAGE_KEY_TYPE == 0
+                ? IntegerDeserializer.class.getName() : StringDeserializer.class.getName();
 
         try (JavaStreamingContext jssc = new JavaStreamingContext(javaSparkContext, BATCH_DURATION)) {
 
